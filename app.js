@@ -1667,7 +1667,176 @@ function changeMovementClient() {
 /* =========================================
    CREAR PROYECTO
 ========================================= */
+async function saveProjectToSupabase(
+  project
+) {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible para guardar proyecto."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+  const localClient =
+    getClientById(
+      project.clientId
+    );
+
+
+  if (!localClient) {
+
+    console.error(
+      "OV Supabase: no se encontró el cliente local del proyecto."
+    );
+
+    return false;
+  }
+
+
+  try {
+
+    /*
+      Buscar el cliente correspondiente
+      en Supabase
+    */
+
+    const {
+      data: remoteClients,
+      error: clientError
+    } =
+      await ovSupabase
+        .from("clients")
+        .select("id")
+        .eq(
+          "company_id",
+          companyId
+        )
+        .ilike(
+          "name",
+          localClient.name
+        )
+        .limit(1);
+
+
+    if (clientError) {
+      throw clientError;
+    }
+
+
+    if (
+      !remoteClients ||
+      remoteClients.length === 0
+    ) {
+
+      throw new Error(
+        "El cliente todavía no existe en Supabase."
+      );
+    }
+
+
+    const supabaseClientId =
+      remoteClients[0].id;
+
+
+    /*
+      Evitar proyecto duplicado
+    */
+
+    const {
+      data: existingProjects,
+      error: searchError
+    } =
+      await ovSupabase
+        .from("projects")
+        .select("id, name")
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "client_id",
+          supabaseClientId
+        )
+        .ilike(
+          "name",
+          project.name
+        )
+        .limit(1);
+
+
+    if (searchError) {
+      throw searchError;
+    }
+
+
+    if (
+      existingProjects &&
+      existingProjects.length > 0
+    ) {
+
+      console.info(
+        "OV Supabase: proyecto ya existe.",
+        project.name
+      );
+
+      return true;
+    }
+
+
+    /*
+      Crear proyecto
+    */
+
+    const {
+      error: insertError
+    } =
+      await ovSupabase
+        .from("projects")
+        .insert({
+          company_id:
+            companyId,
+
+          client_id:
+            supabaseClientId,
+
+          name:
+            project.name
+        });
+
+
+    if (insertError) {
+      throw insertError;
+    }
+
+
+    console.info(
+      "OV Supabase: proyecto guardado.",
+      project.name
+    );
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al guardar proyecto:",
+      error
+    );
+
+    return false;
+  }
+}
 function createProject(clientId) {
 
   const client =
@@ -1724,7 +1893,10 @@ function createProject(clientId) {
   getProjects().push(
     project
   );
-
+   
+saveProjectToSupabase(
+  project
+);
   saveData();
 
   renderClientList();
