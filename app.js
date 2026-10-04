@@ -174,7 +174,158 @@ function getProjects() {
 
   return companyProjects[activeCompanyId];
 }
+async function loadTransactionsFromSupabase() {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+    console.warn(
+      "OV Supabase: sesión no disponible para cargar movimientos."
+    );
+
+    return false;
+  }
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await ovSupabase
+        .from("transactions")
+        .select(`
+          id,
+          legacy_id,
+          type,
+          amount,
+          currency,
+          concept,
+          category,
+          notes,
+          transaction_date,
+          source,
+          classification_status,
+          fiscal_status,
+          reconciliation_status,
+          client_id,
+          project_id,
+          created_at
+        `)
+        .eq(
+          "company_id",
+          companyId
+        )
+        .order(
+          "transaction_date",
+          {
+            ascending: false
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    const remoteTransactions =
+      (data || []).map(
+        transaction => ({
+
+          id:
+            transaction.legacy_id ||
+            transaction.id,
+
+          supabaseId:
+            transaction.id,
+
+          type:
+            transaction.type,
+
+          amount:
+            Number(
+              transaction.amount
+            ),
+
+          currency:
+            transaction.currency ||
+            "MXN",
+
+          concept:
+            transaction.concept,
+
+          category:
+            transaction.category ||
+            "",
+
+          notes:
+            transaction.notes ||
+            "",
+
+          date:
+            transaction.transaction_date,
+
+          source:
+            transaction.source ||
+            "manual",
+
+          classificationStatus:
+            transaction.classification_status ||
+            "unclassified",
+
+          fiscalStatus:
+            transaction.fiscal_status ||
+            "pending",
+
+          reconciliationStatus:
+            transaction.reconciliation_status ||
+            "pending",
+
+          clientId:
+            "",
+
+          projectId:
+            "",
+
+          createdAt:
+            transaction.created_at
+              ? new Date(
+                  transaction.created_at
+                ).getTime()
+              : Date.now()
+        })
+      );
+
+    companyTransactions[
+      activeCompanyId
+    ] =
+      remoteTransactions;
+
+    saveData();
+
+    console.info(
+      "OV Supabase: movimientos cargados.",
+      remoteTransactions.length
+    );
+
+    updateCompanyUI();
+    calculate();
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al cargar movimientos:",
+      error
+    );
+
+    return false;
+  }
+}
 
 function getClientById(id) {
 
