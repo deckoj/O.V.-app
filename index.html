@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OV</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#f5f7f9;
+  color:#17212b;
+}
+
+header{
+  background:#111820;
+  color:white;
+  padding:22px 20px;
+}
+
+.logo{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:2px;
+}
+
+.subtitle{
+  font-size:13px;
+  color:#9ca8b5;
+  margin-top:4px;
+}
+
+main{
+  max-width:900px;
+  margin:auto;
+  padding:22px 16px 100px;
+}
+
+.company{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:22px;
+}
+
+.company h2{
+  margin:0;
+  font-size:22px;
+}
+
+.company select{
+  border:1px solid #ddd;
+  background:white;
+  padding:10px;
+  border-radius:10px;
+}
+
+.balance{
+  background:#17212b;
+  color:white;
+  padding:25px;
+  border-radius:20px;
+  margin-bottom:18px;
+}
+
+.balance small{
+  color:#aeb8c2;
+}
+
+.balance h1{
+  font-size:38px;
+  margin:8px 0;
+}
+
+.positive{
+  color:#58d68d;
+  font-size:14px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.card{
+  background:white;
+  padding:18px;
+  border-radius:16px;
+  box-shadow:0 3px 12px rgba(0,0,0,.05);
+}
+
+.card small{
+  color:#7b8794;
+}
+
+.card h2{
+  margin:8px 0 0;
+}
+
+.income h2{
+  color:#198754;
+}
+
+.expense h2{
+  color:#c0392b;
+}
+
+.section-title{
+  margin:28px 0 12px;
+  font-size:18px;
+}
+
+.transaction{
+  display:flex;
+  justify-content:space-between;
+  background:white;
+  padding:15px;
+  margin-bottom:8px;
+  border-radius:12px;
+}
+
+.transaction small{
+  color:#87919b;
+}
+
+.ai{
+  background:#e9eef3;
+  padding:20px;
+  border-radius:18px;
+  margin-top:25px;
+}
+
+.ai h3{
+  margin-top:0;
+}
+
+.ai input{
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:12px;
+  font-size:15px;
+}
+
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:white;
+  border-top:1px solid #ddd;
+  display:flex;
+  justify-content:space-around;
+  padding:12px 4px 22px;
+}
+
+nav div{
+  text-align:center;
+  font-size:12px;
+  color:#6c7781;
+}
+
+nav .active{
+  color:#111820;
+  font-weight:bold;
+}
+
+button{
+  background:#17212b;
+  color:white;
+  border:0;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:600;
+}
+
+@media(max-width:500px){
+  .balance h1{font-size:34px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">OV</div>
+  <div class="subtitle">Inteligencia financiera empresarial</div>
+</header>
+
+<main>
+
+<div class="company">
+  <div>
+    <small>Empresa</small>
+    <h2>Grupo Decko</h2>
+  </div>
+
+  <select>
+    <option>Grupo Decko</option>
+    <option>Restaurante</option>
+    <option>Xicco Campestre</option>
+    <option>+ Nueva empresa</option>
+  </select>
+</div>
+
+<div class="balance">
+  <small>Disponible</small>
+  <h1>$428,350</h1>
+  <div class="positive">▲ 12.4% este mes</div>
+</div>
+
+<div class="grid">
+
+  <div class="card income">
+    <small>Ingresos</small>
+    <h2>$582,400</h2>
+  </div>
+
+  <div class="card expense">
+    <small>Gastos</small>
+    <h2>$154,050</h2>
+  </div>
+
+</div>
+
+<h3 class="section-title">Flujo del mes</h3>
+
+<div class="card">
+  <small>Resultado</small>
+  <h2>$428,350</h2>
+  <p>Ingresos menos gastos registrados.</p>
+</div>
+
+<h3 class="section-title">Movimientos recientes</h3>
+
+<div class="transaction">
+  <div>
+    <strong>Altozano</strong><br>
+    <small>Mantenimiento</small>
+  </div>
+  <strong style="color:#198754">+$85,000</strong>
+</div>
+
+<div class="transaction">
+  <div>
+    <strong>Nómina</strong><br>
+    <small>Personal operativo</small>
+  </div>
+  <strong style="color:#c0392b">-$42,500</strong>
+</div>
+
+<div class="transaction">
+  <div>
+    <strong>Materiales</strong><br>
+    <small>Proveedor</small>
+  </div>
+  <strong style="color:#c0392b">-$18,750</strong>
+</div>
+
+<div class="ai">
+  <h3>OV Inteligencia</h3>
+  <p>Pregúntale a OV sobre las finanzas de tu empresa.</p>
+
+  <input
+    type="text"
+    placeholder="Ej. ¿Cuánto puedo gastar esta semana?"
+  >
+</div>
+
+</main>
+
+<nav>
+  <div class="active">⌂<br>Inicio</div>
+  <div>↕<br>Movimientos</div>
+  <div>＋<br>Agregar</div>
+  <div>◎<br>OV IA</div>
+  <div>☰<br>Más</div>
+</nav>
+
+</body>
+</html>
