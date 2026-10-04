@@ -1,6 +1,12 @@
 /* =========================================
    OV — APP.JS
-   MVP 0.6
+   MVP 0.7
+   Empresa → Cliente → Proyecto → Movimiento
+========================================= */
+
+
+/* =========================================
+   ESTADO GENERAL
 ========================================= */
 
 let transactionType = "income";
@@ -14,7 +20,7 @@ const OV_CONFIG = {
 
 
 /* =========================================
-   DATOS
+   EMPRESAS
 ========================================= */
 
 let companies =
@@ -28,26 +34,51 @@ let companies =
 
 companies = companies.map(company => ({
   ...company,
-  currency: company.currency || "MXN"
+  currency:
+    company.currency ||
+    OV_CONFIG.defaultCurrency
 }));
 
 let activeCompanyId =
   localStorage.getItem("ov_active_company") ||
   companies[0].id;
 
+if (
+  !companies.some(
+    company =>
+      company.id === activeCompanyId
+  )
+) {
+  activeCompanyId = companies[0].id;
+}
+
+
+/* =========================================
+   MOVIMIENTOS / MIGRACIÓN
+========================================= */
+
 let oldTransactions =
-  JSON.parse(localStorage.getItem("ov_transactions")) || [];
+  JSON.parse(
+    localStorage.getItem("ov_transactions")
+  ) || [];
 
 let companyTransactions =
-  JSON.parse(localStorage.getItem("ov_company_transactions"));
+  JSON.parse(
+    localStorage.getItem(
+      "ov_company_transactions"
+    )
+  );
 
 if (!companyTransactions) {
-  companyTransactions = {
-    "grupo-decko": oldTransactions
-  };
+
+  companyTransactions = {};
+
+  companyTransactions["grupo-decko"] =
+    oldTransactions;
 }
 
 companies.forEach(company => {
+
   if (!companyTransactions[company.id]) {
     companyTransactions[company.id] = [];
   }
@@ -55,24 +86,68 @@ companies.forEach(company => {
 
 
 /* =========================================
-   UTILIDADES
+   CLIENTES
+========================================= */
+
+let companyClients =
+  JSON.parse(
+    localStorage.getItem("ov_company_clients")
+  ) || {};
+
+companies.forEach(company => {
+
+  if (!companyClients[company.id]) {
+    companyClients[company.id] = [];
+  }
+});
+
+
+/* =========================================
+   PROYECTOS
+========================================= */
+
+let companyProjects =
+  JSON.parse(
+    localStorage.getItem(
+      "ov_company_projects"
+    )
+  ) || {};
+
+companies.forEach(company => {
+
+  if (!companyProjects[company.id]) {
+    companyProjects[company.id] = [];
+  }
+});
+
+
+/* =========================================
+   EMPRESA ACTIVA
 ========================================= */
 
 function getActiveCompany() {
+
   return (
-    companies.find(company => company.id === activeCompanyId) ||
+    companies.find(
+      company =>
+        company.id === activeCompanyId
+    ) ||
     companies[0]
   );
 }
 
+
 function getCurrency() {
+
   return (
     getActiveCompany()?.currency ||
     OV_CONFIG.defaultCurrency
   );
 }
 
+
 function getTransactions() {
+
   if (!companyTransactions[activeCompanyId]) {
     companyTransactions[activeCompanyId] = [];
   }
@@ -80,36 +155,48 @@ function getTransactions() {
   return companyTransactions[activeCompanyId];
 }
 
-function setText(id, value) {
-  const element = document.getElementById(id);
 
-  if (element) {
-    element.textContent = value;
-  }
-}
+function getClients() {
 
-function today() {
-  const now = new Date();
-
-  const year = now.getFullYear();
-  const month =
-    String(now.getMonth() + 1).padStart(2, "0");
-  const day =
-    String(now.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function formatDate(date) {
-  if (!date) return "";
-
-  const parts = date.split("-");
-
-  if (parts.length !== 3) {
-    return date;
+  if (!companyClients[activeCompanyId]) {
+    companyClients[activeCompanyId] = [];
   }
 
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return companyClients[activeCompanyId];
+}
+
+
+function getProjects() {
+
+  if (!companyProjects[activeCompanyId]) {
+    companyProjects[activeCompanyId] = [];
+  }
+
+  return companyProjects[activeCompanyId];
+}
+
+
+function getClientById(id) {
+
+  if (!id) return null;
+
+  return (
+    getClients().find(
+      client => client.id === id
+    ) || null
+  );
+}
+
+
+function getProjectById(id) {
+
+  if (!id) return null;
+
+  return (
+    getProjects().find(
+      project => project.id === id
+    ) || null
+  );
 }
 
 
@@ -117,8 +204,13 @@ function formatDate(date) {
    DINERO
 ========================================= */
 
-function money(number, currency = getCurrency()) {
-  const value = Number(number) || 0;
+function money(
+  number,
+  currency = getCurrency()
+) {
+
+  const value =
+    Number(number) || 0;
 
   const formatted =
     new Intl.NumberFormat(
@@ -140,6 +232,7 @@ function money(number, currency = getCurrency()) {
 ========================================= */
 
 function cleanAmount(value) {
+
   if (!value) return "";
 
   return String(value)
@@ -150,27 +243,39 @@ function cleanAmount(value) {
     .replace(/[^\d.]/g, "");
 }
 
+
 function getAmountValue() {
+
   const input =
     document.getElementById("amount");
 
   if (!input) return 0;
 
-  return Number(
-    cleanAmount(input.value)
-  ) || 0;
+  return (
+    Number(
+      cleanAmount(input.value)
+    ) || 0
+  );
 }
 
+
 function formatAmountInput(value) {
-  let clean = cleanAmount(value);
+
+  let clean =
+    cleanAmount(value);
 
   if (!clean) return "";
 
-  const firstDot = clean.indexOf(".");
+  const firstDot =
+    clean.indexOf(".");
 
   if (firstDot !== -1) {
+
     clean =
-      clean.substring(0, firstDot + 1) +
+      clean.substring(
+        0,
+        firstDot + 1
+      ) +
       clean
         .substring(firstDot + 1)
         .replace(/\./g, "");
@@ -180,26 +285,37 @@ function formatAmountInput(value) {
     clean.split(".");
 
   integerPart =
-    integerPart.replace(/^0+(?=\d)/, "");
+    integerPart.replace(
+      /^0+(?=\d)/,
+      ""
+    );
 
   if (!integerPart) {
     integerPart = "0";
   }
 
   const formattedInteger =
-    Number(integerPart).toLocaleString("en-US");
+    Number(integerPart)
+      .toLocaleString("en-US");
 
   if (clean.includes(".")) {
-    decimalPart =
-      (decimalPart || "").slice(0, 2);
 
-    return `${formattedInteger}.${decimalPart}`;
+    decimalPart =
+      (decimalPart || "")
+        .slice(0, 2);
+
+    return (
+      `${formattedInteger}.` +
+      `${decimalPart}`
+    );
   }
 
   return formattedInteger;
 }
 
+
 function setupAmountInput() {
+
   const input =
     document.getElementById("amount");
 
@@ -209,71 +325,98 @@ function setupAmountInput() {
   input.inputMode = "decimal";
   input.autocomplete = "off";
 
-  input.addEventListener("input", () => {
-    input.value =
-      formatAmountInput(input.value);
 
-    const end = input.value.length;
+  input.addEventListener(
+    "input",
+    () => {
 
-    try {
-      input.setSelectionRange(end, end);
-    } catch (error) {}
-  });
+      input.value =
+        formatAmountInput(
+          input.value
+        );
 
-  /*
-    Al salir del campo:
-    $1,500.00 MXN
-  */
-
-  input.addEventListener("blur", () => {
-    const value = getAmountValue();
-
-    if (!value) {
-      input.value = "";
-      return;
-    }
-
-    input.value = money(value);
-  });
-
-  /*
-    Al volver a tocar el campo:
-    1,500
-  */
-
-  input.addEventListener("focus", () => {
-    const value = getAmountValue();
-
-    if (!value) {
-      input.value = "";
-      return;
-    }
-
-    let editable = value.toFixed(2);
-
-    if (editable.endsWith(".00")) {
-      editable = editable.slice(0, -3);
-    }
-
-    input.value =
-      formatAmountInput(editable);
-
-    setTimeout(() => {
-      const end = input.value.length;
+      const end =
+        input.value.length;
 
       try {
-        input.setSelectionRange(end, end);
+        input.setSelectionRange(
+          end,
+          end
+        );
       } catch (error) {}
-    }, 0);
-  });
+    }
+  );
+
+
+  input.addEventListener(
+    "blur",
+    () => {
+
+      const value =
+        getAmountValue();
+
+      if (!value) {
+        input.value = "";
+        return;
+      }
+
+      input.value =
+        money(value);
+    }
+  );
+
+
+  input.addEventListener(
+    "focus",
+    () => {
+
+      const value =
+        getAmountValue();
+
+      if (!value) {
+        input.value = "";
+        return;
+      }
+
+      let editable =
+        value.toFixed(2);
+
+      if (
+        editable.endsWith(".00")
+      ) {
+        editable =
+          editable.slice(0, -3);
+      }
+
+      input.value =
+        formatAmountInput(
+          editable
+        );
+
+      setTimeout(() => {
+
+        const end =
+          input.value.length;
+
+        try {
+          input.setSelectionRange(
+            end,
+            end
+          );
+        } catch (error) {}
+
+      }, 0);
+    }
+  );
 }
 
 
 /* =========================================
-   STORAGE
+   GUARDAR DATOS
 ========================================= */
 
 function saveData() {
+
   localStorage.setItem(
     "ov_companies",
     JSON.stringify(companies)
@@ -286,43 +429,75 @@ function saveData() {
 
   localStorage.setItem(
     "ov_company_transactions",
-    JSON.stringify(companyTransactions)
+    JSON.stringify(
+      companyTransactions
+    )
+  );
+
+  localStorage.setItem(
+    "ov_company_clients",
+    JSON.stringify(
+      companyClients
+    )
+  );
+
+  localStorage.setItem(
+    "ov_company_projects",
+    JSON.stringify(
+      companyProjects
+    )
   );
 }
 
 
 /* =========================================
-   EMPRESAS
+   SELECTOR EMPRESA
 ========================================= */
 
 function renderCompanySelector() {
+
   const select =
-    document.getElementById("companySelect");
+    document.getElementById(
+      "companySelect"
+    );
 
   if (!select) return;
 
   select.innerHTML = "";
 
   companies.forEach(company => {
-    const option =
-      document.createElement("option");
 
-    option.value = company.id;
-    option.textContent = company.name;
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      company.id;
+
+    option.textContent =
+      company.name;
+
     option.selected =
-      company.id === activeCompanyId;
+      company.id ===
+      activeCompanyId;
 
     select.appendChild(option);
   });
 }
 
+
 function changeCompany() {
+
   const select =
-    document.getElementById("companySelect");
+    document.getElementById(
+      "companySelect"
+    );
 
   if (!select) return;
 
-  activeCompanyId = select.value;
+  activeCompanyId =
+    select.value;
 
   editingTransactionId = null;
   selectedTransactionId = null;
@@ -331,31 +506,49 @@ function changeCompany() {
   setType("income");
 
   saveData();
+
+  renderCompanySelector();
   updateCompanyUI();
-  updateMovementFormUI();
+  renderClientSelector();
+  renderProjectSelector();
+  updateMovementFormState();
   calculate();
 
-  showToast("Empresa cambiada");
+  showToast(
+    "Empresa cambiada"
+  );
 }
 
+
+/* =========================================
+   CREAR EMPRESA
+========================================= */
+
 function createCompany() {
+
   const name =
-    prompt("¿Cómo se llama la nueva empresa?");
+    prompt(
+      "¿Cómo se llama la nueva empresa?"
+    );
 
   if (!name) return;
 
-  const cleanName = name.trim();
+  const cleanName =
+    name.trim();
 
   if (!cleanName) return;
 
-  const exists =
+  const alreadyExists =
     companies.some(
       company =>
-        company.name.toLowerCase() ===
-        cleanName.toLowerCase()
+        company.name
+          .toLowerCase() ===
+        cleanName
+          .toLowerCase()
     );
 
-  if (exists) {
+  if (alreadyExists) {
+
     alert(
       "Ya existe una empresa con ese nombre."
     );
@@ -364,7 +557,7 @@ function createCompany() {
   }
 
   const id =
-    "company-" + Date.now();
+    createId("company");
 
   companies.push({
     id,
@@ -373,19 +566,33 @@ function createCompany() {
   });
 
   companyTransactions[id] = [];
+  companyClients[id] = [];
+  companyProjects[id] = [];
 
   activeCompanyId = id;
 
   saveData();
+
   renderCompanySelector();
   updateCompanyUI();
+  renderClientSelector();
+  renderProjectSelector();
   calculate();
 
-  showToast("Empresa creada");
+  showToast(
+    "Empresa creada"
+  );
 }
 
+
+/* =========================================
+   ELIMINAR EMPRESA
+========================================= */
+
 function deleteCompany(id) {
+
   if (companies.length === 1) {
+
     alert(
       "OV debe tener al menos una empresa."
     );
@@ -403,7 +610,8 @@ function deleteCompany(id) {
   const confirmed =
     confirm(
       `¿Eliminar "${company.name}"?\n\n` +
-      `También se eliminarán sus movimientos.`
+      `También se eliminarán sus movimientos, ` +
+      `clientes y proyectos guardados en este dispositivo.`
     );
 
   if (!confirmed) return;
@@ -414,8 +622,12 @@ function deleteCompany(id) {
     );
 
   delete companyTransactions[id];
+  delete companyClients[id];
+  delete companyProjects[id];
 
-  if (activeCompanyId === id) {
+  if (
+    activeCompanyId === id
+  ) {
     activeCompanyId =
       companies[0].id;
   }
@@ -424,77 +636,134 @@ function deleteCompany(id) {
   selectedTransactionId = null;
 
   saveData();
+
   renderCompanySelector();
   updateCompanyUI();
-  updateMovementFormUI();
+  renderClientSelector();
+  renderProjectSelector();
   calculate();
 
-  showToast("Empresa eliminada");
+  showToast(
+    "Empresa eliminada"
+  );
 }
 
+
+/* =========================================
+   LISTA EMPRESAS
+========================================= */
+
 function renderCompanyList() {
+
   const container =
-    document.getElementById("companyList");
+    document.getElementById(
+      "companyList"
+    );
 
   if (!container) return;
 
   container.innerHTML = "";
 
   companies.forEach(company => {
+
     const transactions =
-      companyTransactions[company.id] || [];
+      companyTransactions[
+        company.id
+      ] || [];
+
+    const clients =
+      companyClients[
+        company.id
+      ] || [];
 
     const row =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
-    row.className = "companyRow";
+    row.className =
+      "companyRow";
+
 
     const left =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     const strong =
-      document.createElement("strong");
+      document.createElement(
+        "strong"
+      );
 
     strong.textContent =
       company.name;
 
-    const br =
-      document.createElement("br");
-
     const small =
-      document.createElement("small");
+      document.createElement(
+        "small"
+      );
+
+    small.style.display =
+      "block";
+
+    small.style.marginTop =
+      "4px";
 
     small.textContent =
       `${transactions.length} movimiento` +
       `${transactions.length === 1 ? "" : "s"} · ` +
+      `${clients.length} cliente` +
+      `${clients.length === 1 ? "" : "s"} · ` +
       `${company.currency || "MXN"}`;
 
     left.appendChild(strong);
-    left.appendChild(br);
     left.appendChild(small);
 
+
     const right =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
-    if (company.id === activeCompanyId) {
+    if (
+      company.id ===
+      activeCompanyId
+    ) {
+
       const current =
-        document.createElement("small");
+        document.createElement(
+          "small"
+        );
 
-      current.textContent = "Actual";
+      current.textContent =
+        "Actual";
 
-      right.appendChild(current);
+      right.appendChild(
+        current
+      );
+
     } else {
-      const button =
-        document.createElement("button");
 
-      button.type = "button";
-      button.className = "deleteButton";
-      button.textContent = "Eliminar";
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.className =
+        "deleteButton";
+
+      button.textContent =
+        "Eliminar";
 
       button.onclick =
-        () => deleteCompany(company.id);
+        () =>
+          deleteCompany(
+            company.id
+          );
 
-      right.appendChild(button);
+      right.appendChild(
+        button
+      );
     }
 
     row.appendChild(left);
@@ -506,10 +775,888 @@ function renderCompanyList() {
 
 
 /* =========================================
+   CREAR CLIENTE
+========================================= */
+
+function createClient() {
+
+  const name =
+    prompt(
+      "Nombre del cliente"
+    );
+
+  if (!name) return null;
+
+  const cleanName =
+    name.trim();
+
+  if (!cleanName) return null;
+
+  const existing =
+    getClients().find(
+      client =>
+        client.name
+          .toLowerCase() ===
+        cleanName
+          .toLowerCase()
+    );
+
+  if (existing) {
+
+    alert(
+      "Ya existe un cliente con ese nombre."
+    );
+
+    return existing.id;
+  }
+
+  const client = {
+    id: createId("client"),
+    name: cleanName,
+    createdAt: Date.now()
+  };
+
+  getClients().push(client);
+
+  saveData();
+
+  renderClientList();
+  renderClientSelector();
+
+  showToast(
+    "Cliente creado"
+  );
+
+  return client.id;
+}
+
+
+/* =========================================
+   CLIENTE DESDE MOVIMIENTO
+========================================= */
+
+function createClientFromMovement() {
+
+  const clientId =
+    createClient();
+
+  if (!clientId) return;
+
+  renderClientSelector();
+
+  const select =
+    document.getElementById(
+      "client"
+    );
+
+  if (select) {
+    select.value =
+      clientId;
+  }
+
+  renderProjectSelector();
+
+  showToast(
+    "Cliente seleccionado"
+  );
+}
+
+
+/* =========================================
+   ELIMINAR CLIENTE
+========================================= */
+
+function deleteClient(id) {
+
+  const client =
+    getClientById(id);
+
+  if (!client) return;
+
+  const clientProjects =
+    getProjects().filter(
+      project =>
+        project.clientId === id
+    );
+
+  const relatedTransactions =
+    getTransactions().filter(
+      transaction =>
+        transaction.clientId === id
+    );
+
+  if (
+    relatedTransactions.length > 0
+  ) {
+
+    alert(
+      `No puedes eliminar "${client.name}" porque tiene ` +
+      `${relatedTransactions.length} movimiento` +
+      `${relatedTransactions.length === 1 ? "" : "s"} asociado` +
+      `${relatedTransactions.length === 1 ? "" : "s"}.\n\n` +
+      `Primero edita esos movimientos y cambia el cliente.`
+    );
+
+    return;
+  }
+
+  const confirmed =
+    confirm(
+      `¿Eliminar el cliente "${client.name}"?\n\n` +
+      `También se eliminarán ${clientProjects.length} ` +
+      `proyecto${clientProjects.length === 1 ? "" : "s"} ` +
+      `sin movimientos asociados.`
+    );
+
+  if (!confirmed) return;
+
+  companyClients[
+    activeCompanyId
+  ] =
+    getClients().filter(
+      client =>
+        client.id !== id
+    );
+
+  companyProjects[
+    activeCompanyId
+  ] =
+    getProjects().filter(
+      project =>
+        project.clientId !== id
+    );
+
+  saveData();
+
+  renderClientList();
+  renderClientSelector();
+  renderProjectSelector();
+
+  showToast(
+    "Cliente eliminado"
+  );
+}
+
+
+/* =========================================
+   LISTA CLIENTES
+========================================= */
+
+function renderClientList() {
+
+  const container =
+    document.getElementById(
+      "clientList"
+    );
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const clients =
+    [...getClients()].sort(
+      (a, b) =>
+        a.name.localeCompare(
+          b.name,
+          "es"
+        )
+    );
+
+  if (
+    clients.length === 0
+  ) {
+
+    container.innerHTML =
+      `<div class="empty">` +
+      `Aún no hay clientes en esta empresa.` +
+      `</div>`;
+
+    return;
+  }
+
+  clients.forEach(client => {
+
+    const projects =
+      getProjects().filter(
+        project =>
+          project.clientId ===
+          client.id
+      );
+
+    const transactions =
+      getTransactions().filter(
+        transaction =>
+          transaction.clientId ===
+          client.id
+      );
+
+    const row =
+      document.createElement(
+        "div"
+      );
+
+    row.className =
+      "clientRow";
+
+
+    const header =
+      document.createElement(
+        "div"
+      );
+
+    header.className =
+      "clientHeader";
+
+
+    const info =
+      document.createElement(
+        "div"
+      );
+
+    info.className =
+      "clientInfo";
+
+
+    const strong =
+      document.createElement(
+        "strong"
+      );
+
+    strong.textContent =
+      client.name;
+
+
+    const small =
+      document.createElement(
+        "small"
+      );
+
+    small.textContent =
+      `${projects.length} proyecto` +
+      `${projects.length === 1 ? "" : "s"} · ` +
+      `${transactions.length} movimiento` +
+      `${transactions.length === 1 ? "" : "s"}`;
+
+
+    info.appendChild(strong);
+    info.appendChild(small);
+
+
+    const actions =
+      document.createElement(
+        "div"
+      );
+
+    actions.className =
+      "clientActions";
+
+
+    const addProject =
+      document.createElement(
+        "button"
+      );
+
+    addProject.className =
+      "smallButton";
+
+    addProject.textContent =
+      "+ Proyecto";
+
+    addProject.onclick =
+      () =>
+        createProject(
+          client.id
+        );
+
+
+    const remove =
+      document.createElement(
+        "button"
+      );
+
+    remove.className =
+      "deleteButton";
+
+    remove.textContent =
+      "Eliminar";
+
+    remove.onclick =
+      () =>
+        deleteClient(
+          client.id
+        );
+
+
+    actions.appendChild(
+      addProject
+    );
+
+    actions.appendChild(
+      remove
+    );
+
+
+    header.appendChild(info);
+    header.appendChild(actions);
+
+    row.appendChild(header);
+
+
+    if (
+      projects.length > 0
+    ) {
+
+      const projectList =
+        document.createElement(
+          "div"
+        );
+
+      projectList.className =
+        "projectList";
+
+
+      projects
+        .sort(
+          (a, b) =>
+            a.name.localeCompare(
+              b.name,
+              "es"
+            )
+        )
+        .forEach(project => {
+
+          const projectRow =
+            document.createElement(
+              "div"
+            );
+
+          projectRow.className =
+            "projectRow";
+
+
+          const left =
+            document.createElement(
+              "div"
+            );
+
+
+          const name =
+            document.createElement(
+              "div"
+            );
+
+          name.className =
+            "projectName";
+
+          name.textContent =
+            project.name;
+
+
+          const count =
+            getTransactions()
+              .filter(
+                transaction =>
+                  transaction.projectId ===
+                  project.id
+              )
+              .length;
+
+
+          const meta =
+            document.createElement(
+              "div"
+            );
+
+          meta.className =
+            "projectMeta";
+
+          meta.textContent =
+            `${count} movimiento` +
+            `${count === 1 ? "" : "s"}`;
+
+
+          left.appendChild(name);
+          left.appendChild(meta);
+
+
+          const deleteButton =
+            document.createElement(
+              "button"
+            );
+
+          deleteButton.className =
+            "projectDelete";
+
+          deleteButton.textContent =
+            "Eliminar";
+
+          deleteButton.onclick =
+            () =>
+              deleteProject(
+                project.id
+              );
+
+
+          projectRow.appendChild(
+            left
+          );
+
+          projectRow.appendChild(
+            deleteButton
+          );
+
+          projectList.appendChild(
+            projectRow
+          );
+        });
+
+
+      row.appendChild(
+        projectList
+      );
+    }
+
+    container.appendChild(row);
+  });
+}
+
+
+/* =========================================
+   SELECTOR CLIENTE
+========================================= */
+
+function renderClientSelector(
+  selectedClientId = null
+) {
+
+  const select =
+    document.getElementById(
+      "client"
+    );
+
+  if (!select) return;
+
+  const currentValue =
+    selectedClientId !== null
+      ? selectedClientId
+      : select.value;
+
+  select.innerHTML = "";
+
+  const emptyOption =
+    document.createElement(
+      "option"
+    );
+
+  emptyOption.value = "";
+  emptyOption.textContent =
+    "Sin cliente";
+
+  select.appendChild(
+    emptyOption
+  );
+
+
+  const clients =
+    [...getClients()].sort(
+      (a, b) =>
+        a.name.localeCompare(
+          b.name,
+          "es"
+        )
+    );
+
+  clients.forEach(client => {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      client.id;
+
+    option.textContent =
+      client.name;
+
+    select.appendChild(
+      option
+    );
+  });
+
+
+  if (
+    currentValue &&
+    clients.some(
+      client =>
+        client.id ===
+        currentValue
+    )
+  ) {
+
+    select.value =
+      currentValue;
+
+  } else {
+
+    select.value = "";
+  }
+}
+
+
+/* =========================================
+   CAMBIO CLIENTE MOVIMIENTO
+========================================= */
+
+function changeMovementClient() {
+
+  renderProjectSelector();
+}
+
+
+/* =========================================
+   CREAR PROYECTO
+========================================= */
+
+function createProject(clientId) {
+
+  const client =
+    getClientById(clientId);
+
+  if (!client) {
+
+    alert(
+      "Primero selecciona un cliente."
+    );
+
+    return null;
+  }
+
+  const name =
+    prompt(
+      `Nuevo proyecto / cuenta para ${client.name}`
+    );
+
+  if (!name) return null;
+
+  const cleanName =
+    name.trim();
+
+  if (!cleanName) return null;
+
+  const existing =
+    getProjects().find(
+      project =>
+        project.clientId ===
+          clientId &&
+        project.name
+          .toLowerCase() ===
+        cleanName
+          .toLowerCase()
+    );
+
+  if (existing) {
+
+    alert(
+      "Ese cliente ya tiene un proyecto con ese nombre."
+    );
+
+    return existing.id;
+  }
+
+  const project = {
+    id: createId("project"),
+    clientId,
+    name: cleanName,
+    createdAt: Date.now()
+  };
+
+  getProjects().push(
+    project
+  );
+
+  saveData();
+
+  renderClientList();
+  renderProjectSelector();
+
+  showToast(
+    "Proyecto creado"
+  );
+
+  return project.id;
+}
+
+
+/* =========================================
+   PROYECTO DESDE MOVIMIENTO
+========================================= */
+
+function createProjectFromMovement() {
+
+  const clientSelect =
+    document.getElementById(
+      "client"
+    );
+
+  if (!clientSelect) return;
+
+  const clientId =
+    clientSelect.value;
+
+  if (!clientId) {
+
+    alert(
+      "Primero selecciona o crea un cliente."
+    );
+
+    return;
+  }
+
+  const projectId =
+    createProject(
+      clientId
+    );
+
+  if (!projectId) return;
+
+  renderProjectSelector(
+    projectId
+  );
+
+  showToast(
+    "Proyecto seleccionado"
+  );
+}
+
+
+/* =========================================
+   ELIMINAR PROYECTO
+========================================= */
+
+function deleteProject(id) {
+
+  const project =
+    getProjectById(id);
+
+  if (!project) return;
+
+  const relatedTransactions =
+    getTransactions().filter(
+      transaction =>
+        transaction.projectId === id
+    );
+
+  if (
+    relatedTransactions.length > 0
+  ) {
+
+    alert(
+      `No puedes eliminar "${project.name}" porque tiene ` +
+      `${relatedTransactions.length} movimiento` +
+      `${relatedTransactions.length === 1 ? "" : "s"} asociado` +
+      `${relatedTransactions.length === 1 ? "" : "s"}.\n\n` +
+      `Primero cambia el proyecto de esos movimientos.`
+    );
+
+    return;
+  }
+
+  const confirmed =
+    confirm(
+      `¿Eliminar el proyecto "${project.name}"?`
+    );
+
+  if (!confirmed) return;
+
+  companyProjects[
+    activeCompanyId
+  ] =
+    getProjects().filter(
+      project =>
+        project.id !== id
+    );
+
+  saveData();
+
+  renderClientList();
+  renderProjectSelector();
+
+  showToast(
+    "Proyecto eliminado"
+  );
+}
+
+
+/* =========================================
+   SELECTOR PROYECTO
+========================================= */
+
+function renderProjectSelector(
+  selectedProjectId = null
+) {
+
+  const clientSelect =
+    document.getElementById(
+      "client"
+    );
+
+  const projectSelect =
+    document.getElementById(
+      "project"
+    );
+
+  const help =
+    document.getElementById(
+      "projectHelp"
+    );
+
+  const newProjectButton =
+    document.getElementById(
+      "newProjectButton"
+    );
+
+  if (
+    !clientSelect ||
+    !projectSelect
+  ) {
+    return;
+  }
+
+  const clientId =
+    clientSelect.value;
+
+  const currentValue =
+    selectedProjectId !== null
+      ? selectedProjectId
+      : projectSelect.value;
+
+  projectSelect.innerHTML = "";
+
+  const emptyOption =
+    document.createElement(
+      "option"
+    );
+
+  emptyOption.value = "";
+
+  emptyOption.textContent =
+    clientId
+      ? "Sin proyecto"
+      : "Selecciona un cliente";
+
+  projectSelect.appendChild(
+    emptyOption
+  );
+
+
+  if (!clientId) {
+
+    projectSelect.disabled =
+      true;
+
+    if (newProjectButton) {
+      newProjectButton.disabled =
+        true;
+
+      newProjectButton.style.opacity =
+        "0.45";
+    }
+
+    if (help) {
+      help.textContent =
+        "Primero selecciona un cliente para asignar un proyecto.";
+    }
+
+    return;
+  }
+
+
+  projectSelect.disabled =
+    false;
+
+  if (newProjectButton) {
+    newProjectButton.disabled =
+      false;
+
+    newProjectButton.style.opacity =
+      "1";
+  }
+
+
+  const client =
+    getClientById(clientId);
+
+  const projects =
+    getProjects()
+      .filter(
+        project =>
+          project.clientId ===
+          clientId
+      )
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(
+            b.name,
+            "es"
+          )
+      );
+
+
+  projects.forEach(project => {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      project.id;
+
+    option.textContent =
+      project.name;
+
+    projectSelect.appendChild(
+      option
+    );
+  });
+
+
+  if (
+    currentValue &&
+    projects.some(
+      project =>
+        project.id ===
+        currentValue
+    )
+  ) {
+
+    projectSelect.value =
+      currentValue;
+
+  } else {
+
+    projectSelect.value =
+      "";
+  }
+
+
+  if (help) {
+
+    help.textContent =
+      projects.length > 0
+        ? `Proyectos de ${client?.name || "este cliente"}.`
+        : `${client?.name || "Este cliente"} todavía no tiene proyectos.`;
+  }
+}
+
+
+/* =========================================
    UI EMPRESA
 ========================================= */
 
 function updateCompanyUI() {
+
   const company =
     getActiveCompany();
 
@@ -527,7 +1674,7 @@ function updateCompanyUI() {
 
   setText(
     "addCompanyText",
-    editingTransactionId !== null
+    editingTransactionId
       ? `Editando movimiento de ${company.name} · ${getCurrency()}.`
       : `Registrando movimiento en ${company.name} · ${getCurrency()}.`
   );
@@ -543,6 +1690,7 @@ function updateCompanyUI() {
   );
 
   renderCompanyList();
+  renderClientList();
 }
 
 
@@ -551,22 +1699,35 @@ function updateCompanyUI() {
 ========================================= */
 
 function calculate() {
+
   const transactions =
     getTransactions();
 
   let income = 0;
   let expense = 0;
 
-  transactions.forEach(transaction => {
-    const amount =
-      Number(transaction.amount) || 0;
+  transactions.forEach(
+    transaction => {
 
-    if (transaction.type === "income") {
-      income += amount;
-    } else {
-      expense += amount;
+      if (
+        transaction.type ===
+        "income"
+      ) {
+
+        income +=
+          Number(
+            transaction.amount
+          );
+
+      } else {
+
+        expense +=
+          Number(
+            transaction.amount
+          );
+      }
     }
-  });
+  );
 
   const balance =
     income - expense;
@@ -596,95 +1757,11 @@ function calculate() {
 
 
 /* =========================================
-   CREAR MOVIMIENTO VISUAL
-========================================= */
-
-function createTransactionElement(transaction) {
-  const wrapper =
-    document.createElement("div");
-
-  wrapper.className =
-    "transaction";
-
-  const info =
-    document.createElement("div");
-
-  info.className =
-    "transactionInfo";
-
-  const concept =
-    document.createElement("strong");
-
-  concept.textContent =
-    transaction.concept ||
-    "Sin concepto";
-
-  const details =
-    document.createElement("small");
-
-  details.textContent =
-    `${transaction.category || "Otros"} · ` +
-    `${formatDate(transaction.date)}`;
-
-  info.appendChild(concept);
-  info.appendChild(details);
-
-  const right =
-    document.createElement("div");
-
-  right.className =
-    "transactionRight";
-
-  const amount =
-    document.createElement("div");
-
-  amount.className =
-    transaction.type === "income"
-      ? "amountIncome"
-      : "amountExpense";
-
-  amount.textContent =
-    `${transaction.type === "income" ? "+" : "-"}` +
-    `${money(transaction.amount)}`;
-
-  const menuButton =
-    document.createElement("button");
-
-  menuButton.type = "button";
-
-  menuButton.className =
-    "transactionMenuButton";
-
-  menuButton.textContent = "⋯";
-
-  menuButton.setAttribute(
-    "aria-label",
-    "Opciones del movimiento"
-  );
-
-  menuButton.onclick = event => {
-    event.stopPropagation();
-
-    openTransactionMenu(
-      transaction.id
-    );
-  };
-
-  right.appendChild(amount);
-  right.appendChild(menuButton);
-
-  wrapper.appendChild(info);
-  wrapper.appendChild(right);
-
-  return wrapper;
-}
-
-
-/* =========================================
-   RENDER MOVIMIENTOS
+   MOVIMIENTOS
 ========================================= */
 
 function renderTransactions() {
+
   const transactions =
     getTransactions();
 
@@ -710,41 +1787,144 @@ function renderTransactions() {
   recent.innerHTML = "";
   all.innerHTML = "";
 
-  if (!sorted.length) {
-    const text =
-      "Aún no hay movimientos en esta empresa.";
+  if (
+    sorted.length === 0
+  ) {
 
-    const emptyRecent =
-      document.createElement("div");
+    const empty =
+      `<div class="empty">` +
+      `Aún no hay movimientos en esta empresa.` +
+      `</div>`;
 
-    emptyRecent.className = "empty";
-    emptyRecent.textContent = text;
-
-    const emptyAll =
-      document.createElement("div");
-
-    emptyAll.className = "empty";
-    emptyAll.textContent = text;
-
-    recent.appendChild(emptyRecent);
-    all.appendChild(emptyAll);
+    recent.innerHTML = empty;
+    all.innerHTML = empty;
 
     return;
   }
 
+
   sorted.forEach(
     (transaction, index) => {
-      all.appendChild(
-        createTransactionElement(
-          transaction
-        )
+
+      const sign =
+        transaction.type ===
+        "income"
+          ? "+"
+          : "-";
+
+      const amountClass =
+        transaction.type ===
+        "income"
+          ? "amountIncome"
+          : "amountExpense";
+
+
+      const client =
+        getClientById(
+          transaction.clientId
+        );
+
+      const project =
+        getProjectById(
+          transaction.projectId
+        );
+
+
+      const details = [];
+
+      if (client) {
+        details.push(
+          client.name
+        );
+      }
+
+      if (project) {
+        details.push(
+          project.name
+        );
+      }
+
+      if (
+        transaction.category
+      ) {
+        details.push(
+          transaction.category
+        );
+      }
+
+      if (
+        transaction.date
+      ) {
+        details.push(
+          formatDate(
+            transaction.date
+          )
+        );
+      }
+
+
+      const safeConcept =
+        escapeHTML(
+          transaction.concept ||
+          "Movimiento"
+        );
+
+      const safeDetails =
+        details
+          .map(item =>
+            escapeHTML(item)
+          )
+          .join(" · ");
+
+
+      const html = `
+        <div class="transaction">
+
+          <div class="transactionInfo">
+
+            <strong>
+              ${safeConcept}
+            </strong>
+
+            <small>
+              ${safeDetails}
+            </small>
+
+          </div>
+
+
+          <div class="transactionRight">
+
+            <div class="${amountClass}">
+              ${sign}${money(transaction.amount)}
+            </div>
+
+            <button
+              type="button"
+              class="transactionMenuButton"
+              aria-label="Opciones del movimiento"
+              onclick="openTransactionMenu(${Number(transaction.id)})">
+
+              ⋯
+
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+
+      all.insertAdjacentHTML(
+        "beforeend",
+        html
       );
 
       if (index < 3) {
-        recent.appendChild(
-          createTransactionElement(
-            transaction
-          )
+
+        recent.insertAdjacentHTML(
+          "beforeend",
+          html
         );
       }
     }
@@ -753,32 +1933,37 @@ function renderTransactions() {
 
 
 /* =========================================
-   MENÚ ⋯
+   MENÚ MOVIMIENTO
 ========================================= */
 
 function openTransactionMenu(id) {
+
   const transaction =
     getTransactions().find(
-      item =>
-        String(item.id) ===
-        String(id)
+      transaction =>
+        Number(transaction.id) ===
+        Number(id)
     );
 
   if (!transaction) return;
 
   selectedTransactionId =
-    transaction.id;
+    Number(id);
 
   setText(
     "menuTransactionConcept",
     transaction.concept ||
-      "Movimiento"
+    "Movimiento"
   );
 
   setText(
     "menuTransactionAmount",
-    `${transaction.type === "income" ? "+" : "-"}` +
-    `${money(transaction.amount)}`
+    `${
+      transaction.type ===
+      "income"
+        ? "+"
+        : "-"
+    }${money(transaction.amount)}`
   );
 
   const overlay =
@@ -786,17 +1971,26 @@ function openTransactionMenu(id) {
       "transactionOverlay"
     );
 
-  if (!overlay) return;
-
-  overlay.classList.remove(
-    "hidden"
-  );
-
-  document.body.style.overflow =
-    "hidden";
+  if (overlay) {
+    overlay.classList.remove(
+      "hidden"
+    );
+  }
 }
 
-function hideTransactionMenu() {
+
+function closeTransactionMenu(
+  event = null
+) {
+
+  if (
+    event &&
+    event.target !==
+      event.currentTarget
+  ) {
+    return;
+  }
+
   const overlay =
     document.getElementById(
       "transactionOverlay"
@@ -808,22 +2002,6 @@ function hideTransactionMenu() {
     );
   }
 
-  document.body.style.overflow =
-    "";
-}
-
-function closeTransactionMenu(event) {
-  if (
-    event &&
-    event.target &&
-    event.target.id !==
-      "transactionOverlay"
-  ) {
-    return;
-  }
-
-  hideTransactionMenu();
-
   selectedTransactionId =
     null;
 }
@@ -834,8 +2012,10 @@ function closeTransactionMenu(event) {
 ========================================= */
 
 function editSelectedTransaction() {
+
   if (
-    selectedTransactionId === null
+    selectedTransactionId ===
+    null
   ) {
     return;
   }
@@ -843,12 +2023,31 @@ function editSelectedTransaction() {
   const id =
     selectedTransactionId;
 
-  hideTransactionMenu();
-
-  selectedTransactionId =
-    null;
+  closeTransactionMenu();
 
   editTransaction(id);
+}
+
+
+/* =========================================
+   ELIMINAR DESDE MENÚ
+========================================= */
+
+function deleteSelectedTransaction() {
+
+  if (
+    selectedTransactionId ===
+    null
+  ) {
+    return;
+  }
+
+  const id =
+    selectedTransactionId;
+
+  closeTransactionMenu();
+
+  deleteTransaction(id);
 }
 
 
@@ -857,104 +2056,110 @@ function editSelectedTransaction() {
 ========================================= */
 
 function editTransaction(id) {
+
   const transaction =
     getTransactions().find(
-      item =>
-        String(item.id) ===
-        String(id)
+      transaction =>
+        Number(transaction.id) ===
+        Number(id)
     );
 
-  if (!transaction) {
-    alert(
-      "No se encontró el movimiento."
-    );
-
-    return;
-  }
-
-  /*
-    IMPORTANTE:
-    solo copiamos los datos al formulario.
-    No modificamos Storage.
-  */
+  if (!transaction) return;
 
   editingTransactionId =
-    transaction.id;
+    Number(id);
 
   setType(
-    transaction.type === "expense"
-      ? "expense"
-      : "income"
+    transaction.type
   );
 
-  const amount =
-    document.getElementById("amount");
 
-  const concept =
-    document.getElementById("concept");
+  const amountInput =
+    document.getElementById(
+      "amount"
+    );
 
-  const category =
-    document.getElementById("category");
+  if (amountInput) {
 
-  const date =
-    document.getElementById("date");
-
-  const notes =
-    document.getElementById("notes");
-
-  if (amount) {
-    amount.value =
-      money(transaction.amount);
-  }
-
-  if (concept) {
-    concept.value =
-      transaction.concept || "";
-  }
-
-  if (category) {
-    const currentCategory =
-      transaction.category ||
-      "Otros";
-
-    const exists =
-      Array.from(
-        category.options
-      ).some(
-        option =>
-          option.value ===
-          currentCategory
+    amountInput.value =
+      money(
+        transaction.amount
       );
-
-    category.value =
-      exists
-        ? currentCategory
-        : "Otros";
   }
 
-  if (date) {
-    date.value =
-      transaction.date ||
-      today();
+
+  setValue(
+    "concept",
+    transaction.concept || ""
+  );
+
+  setValue(
+    "category",
+    transaction.category ||
+    "Otros"
+  );
+
+  setValue(
+    "date",
+    transaction.date ||
+    today()
+  );
+
+  setValue(
+    "notes",
+    transaction.notes || ""
+  );
+
+
+  renderClientSelector(
+    transaction.clientId || ""
+  );
+
+
+  const clientSelect =
+    document.getElementById(
+      "client"
+    );
+
+  if (clientSelect) {
+
+    clientSelect.value =
+      transaction.clientId || "";
   }
 
-  if (notes) {
-    notes.value =
-      transaction.notes || "";
+
+  renderProjectSelector(
+    transaction.projectId || ""
+  );
+
+
+  const projectSelect =
+    document.getElementById(
+      "project"
+    );
+
+  if (
+    projectSelect &&
+    transaction.projectId
+  ) {
+
+    projectSelect.value =
+      transaction.projectId;
   }
 
-  updateMovementFormUI();
+
+  updateMovementFormState();
+
   updateCompanyUI();
 
-  const addButton =
-    document.querySelectorAll(
-      ".navItem"
-    )[2];
 
   showPage(
     "add",
-    addButton
+    document.querySelectorAll(
+      ".navItem"
+    )[2]
   );
+
 
   showToast(
     "Editando movimiento"
@@ -963,83 +2168,22 @@ function editTransaction(id) {
 
 
 /* =========================================
-   CANCELAR EDICIÓN
-========================================= */
-
-function cancelEdit() {
-  /*
-    NO se modifica Storage.
-    Simplemente abandonamos
-    la copia que estaba en pantalla.
-  */
-
-  editingTransactionId =
-    null;
-
-  selectedTransactionId =
-    null;
-
-  clearMovementForm();
-
-  setType("income");
-
-  updateMovementFormUI();
-
-  updateCompanyUI();
-
-  /*
-    REGRESAR A MOVIMIENTOS
-  */
-
-  const movementsButton =
-    document.querySelectorAll(
-      ".navItem"
-    )[1];
-
-  showPage(
-    "movements",
-    movementsButton
-  );
-
-  /*
-    Volvemos a pintar los datos
-    reales guardados en Storage.
-  */
-
-  calculate();
-
-  showToast(
-    "Cambios cancelados"
-  );
-}
-
-
-/* =========================================
    ELIMINAR MOVIMIENTO
 ========================================= */
 
-function deleteSelectedTransaction() {
-  if (
-    selectedTransactionId === null
-  ) {
-    return;
-  }
+function deleteTransaction(id) {
 
-  const id =
-    selectedTransactionId;
+  const transactions =
+    getTransactions();
 
   const transaction =
-    getTransactions().find(
-      item =>
-        String(item.id) ===
-        String(id)
+    transactions.find(
+      transaction =>
+        Number(transaction.id) ===
+        Number(id)
     );
 
-  if (!transaction) {
-    hideTransactionMenu();
-    selectedTransactionId = null;
-    return;
-  }
+  if (!transaction) return;
 
   const confirmed =
     confirm(
@@ -1050,34 +2194,41 @@ function deleteSelectedTransaction() {
     );
 
   if (!confirmed) {
+
+    showToast(
+      "Eliminación cancelada"
+    );
+
     return;
   }
+
 
   companyTransactions[
     activeCompanyId
   ] =
-    getTransactions().filter(
-      item =>
-        String(item.id) !==
-        String(id)
+    transactions.filter(
+      transaction =>
+        Number(transaction.id) !==
+        Number(id)
     );
 
-  hideTransactionMenu();
-
-  selectedTransactionId =
-    null;
 
   if (
-    String(editingTransactionId) ===
-    String(id)
+    editingTransactionId ===
+    Number(id)
   ) {
+
     editingTransactionId =
       null;
   }
 
+
   saveData();
 
-  updateMovementFormUI();
+  clearMovementForm();
+  setType("income");
+
+  updateMovementFormState();
   updateCompanyUI();
   calculate();
 
@@ -1088,22 +2239,22 @@ function deleteSelectedTransaction() {
 
 
 /* =========================================
-   NUEVO MOVIMIENTO
+   ABRIR MOVIMIENTO NUEVO
 ========================================= */
 
 function openNewMovement(button) {
-  editingTransactionId =
-    null;
 
-  selectedTransactionId =
+  editingTransactionId =
     null;
 
   clearMovementForm();
 
   setType("income");
 
-  updateMovementFormUI();
+  renderClientSelector();
+  renderProjectSelector();
 
+  updateMovementFormState();
   updateCompanyUI();
 
   showPage(
@@ -1114,10 +2265,43 @@ function openNewMovement(button) {
 
 
 /* =========================================
-   UI FORMULARIO
+   CANCELAR EDICIÓN
 ========================================= */
 
-function updateMovementFormUI() {
+function cancelEdit() {
+
+  editingTransactionId =
+    null;
+
+  clearMovementForm();
+
+  setType("income");
+
+  renderClientSelector();
+  renderProjectSelector();
+
+  updateMovementFormState();
+  updateCompanyUI();
+
+  showToast(
+    "Edición cancelada"
+  );
+
+  showPage(
+    "movements",
+    document.querySelectorAll(
+      ".navItem"
+    )[1]
+  );
+}
+
+
+/* =========================================
+   ESTADO FORMULARIO
+========================================= */
+
+function updateMovementFormState() {
+
   const title =
     document.getElementById(
       "movementFormTitle"
@@ -1133,28 +2317,44 @@ function updateMovementFormUI() {
       "cancelEditButton"
     );
 
-  const editing =
-    editingTransactionId !== null;
 
-  if (title) {
-    title.textContent =
-      editing
-        ? "Editar movimiento"
-        : "Agregar movimiento";
-  }
+  if (
+    editingTransactionId
+  ) {
 
-  if (saveButton) {
-    saveButton.textContent =
-      editing
-        ? "Guardar cambios"
-        : "Guardar movimiento";
-  }
+    if (title) {
+      title.textContent =
+        "Editar movimiento";
+    }
 
-  if (cancelButton) {
-    cancelButton.classList.toggle(
-      "hidden",
-      !editing
-    );
+    if (saveButton) {
+      saveButton.textContent =
+        "Guardar cambios";
+    }
+
+    if (cancelButton) {
+      cancelButton.classList.remove(
+        "hidden"
+      );
+    }
+
+  } else {
+
+    if (title) {
+      title.textContent =
+        "Agregar movimiento";
+    }
+
+    if (saveButton) {
+      saveButton.textContent =
+        "Guardar movimiento";
+    }
+
+    if (cancelButton) {
+      cancelButton.classList.add(
+        "hidden"
+      );
+    }
   }
 }
 
@@ -1164,62 +2364,60 @@ function updateMovementFormUI() {
 ========================================= */
 
 function clearMovementForm() {
-  const amount =
+
+  setValue(
+    "amount",
+    ""
+  );
+
+  setValue(
+    "concept",
+    ""
+  );
+
+  setValue(
+    "notes",
+    ""
+  );
+
+  setValue(
+    "date",
+    today()
+  );
+
+  setValue(
+    "category",
+    "Ventas"
+  );
+
+  const client =
     document.getElementById(
-      "amount"
+      "client"
     );
 
-  const concept =
-    document.getElementById(
-      "concept"
-    );
-
-  const category =
-    document.getElementById(
-      "category"
-    );
-
-  const date =
-    document.getElementById(
-      "date"
-    );
-
-  const notes =
-    document.getElementById(
-      "notes"
-    );
-
-  if (amount) {
-    amount.value = "";
+  if (client) {
+    client.value = "";
   }
 
-  if (concept) {
-    concept.value = "";
-  }
+  const project =
+    document.getElementById(
+      "project"
+    );
 
-  if (notes) {
-    notes.value = "";
-  }
-
-  if (category) {
-    category.selectedIndex = 0;
-  }
-
-  if (date) {
-    date.value = today();
+  if (project) {
+    project.value = "";
   }
 }
 
 
 /* =========================================
-   INGRESO / GASTO
+   TIPO MOVIMIENTO
 ========================================= */
 
 function setType(type) {
+
   transactionType =
-    type === "expense"
-      ? "expense"
-      : "income";
+    type;
 
   const incomeButton =
     document.getElementById(
@@ -1232,18 +2430,18 @@ function setType(type) {
     );
 
   if (incomeButton) {
+
     incomeButton.classList.toggle(
       "active",
-      transactionType ===
-        "income"
+      type === "income"
     );
   }
 
   if (expenseButton) {
+
     expenseButton.classList.toggle(
       "active",
-      transactionType ===
-        "expense"
+      type === "expense"
     );
   }
 }
@@ -1254,32 +2452,36 @@ function setType(type) {
 ========================================= */
 
 function saveTransaction() {
+
   const amount =
     getAmountValue();
 
   const concept =
-    document
-      .getElementById("concept")
-      ?.value
-      .trim() || "";
+    getValue("concept")
+      .trim();
 
   const category =
-    document
-      .getElementById("category")
-      ?.value || "Otros";
+    getValue("category");
 
   const date =
-    document
-      .getElementById("date")
-      ?.value || today();
+    getValue("date");
 
   const notes =
-    document
-      .getElementById("notes")
-      ?.value
-      .trim() || "";
+    getValue("notes")
+      .trim();
 
-  if (!amount || amount <= 0) {
+  const clientId =
+    getValue("client");
+
+  const projectId =
+    getValue("project");
+
+
+  if (
+    !amount ||
+    amount <= 0
+  ) {
+
     alert(
       "Ingresa un monto válido."
     );
@@ -1287,7 +2489,9 @@ function saveTransaction() {
     return;
   }
 
+
   if (!concept) {
+
     alert(
       "Escribe el concepto del movimiento."
     );
@@ -1295,27 +2499,58 @@ function saveTransaction() {
     return;
   }
 
+
+  /*
+    PROTECCIÓN:
+    si hay proyecto debe pertenecer
+    al cliente seleccionado.
+  */
+
+  if (projectId) {
+
+    const project =
+      getProjectById(
+        projectId
+      );
+
+    if (
+      !project ||
+      project.clientId !==
+        clientId
+    ) {
+
+      alert(
+        "El proyecto seleccionado no corresponde al cliente."
+      );
+
+      return;
+    }
+  }
+
+
   const transactions =
     getTransactions();
 
 
-  /* =====================================
-     EDITANDO
-  ===================================== */
+  /*
+    ACTUALIZAR
+  */
 
   if (
-    editingTransactionId !== null
+    editingTransactionId
   ) {
+
     const transaction =
       transactions.find(
-        item =>
-          String(item.id) ===
-          String(
+        transaction =>
+          Number(transaction.id) ===
+          Number(
             editingTransactionId
           )
       );
 
     if (!transaction) {
+
       alert(
         "No se encontró el movimiento."
       );
@@ -1323,10 +2558,6 @@ function saveTransaction() {
       return;
     }
 
-    /*
-      SOLO AQUÍ cambiamos
-      el movimiento original.
-    */
 
     transaction.type =
       transactionType;
@@ -1340,123 +2571,100 @@ function saveTransaction() {
     transaction.concept =
       concept;
 
+    transaction.clientId =
+      clientId || "";
+
+    transaction.projectId =
+      projectId || "";
+
     transaction.category =
       category;
 
     transaction.date =
-      date;
+      date || today();
 
     transaction.notes =
       notes;
 
-    transaction.createdAt =
-      transaction.createdAt ||
-      Number(transaction.id) ||
-      Date.now();
+    transaction.source =
+      transaction.source ||
+      "manual";
 
     transaction.updatedAt =
       Date.now();
 
-    companyTransactions[
-      activeCompanyId
-    ] = transactions;
-
-    /*
-      AHORA SÍ guardar en Storage.
-    */
-
-    saveData();
 
     editingTransactionId =
       null;
 
-    clearMovementForm();
-
-    setType("income");
-
-    updateMovementFormUI();
-
-    updateCompanyUI();
-
-    /*
-      Recalcular todo desde cero.
-    */
-
-    calculate();
-
-    /*
-      Volver a movimientos.
-    */
-
-    const movementsButton =
-      document.querySelectorAll(
-        ".navItem"
-      )[1];
-
-    showPage(
-      "movements",
-      movementsButton
+    showToast(
+      "Movimiento actualizado"
     );
+
+  } else {
+
+    /*
+      MOVIMIENTO NUEVO
+    */
+
+    transactions.push({
+
+      id:
+        Date.now(),
+
+      type:
+        transactionType,
+
+      amount,
+
+      currency:
+        getCurrency(),
+
+      concept,
+
+      clientId:
+        clientId || "",
+
+      projectId:
+        projectId || "",
+
+      category,
+
+      source:
+        "manual",
+
+      classificationStatus:
+        clientId
+          ? "manual"
+          : "unclassified",
+
+      fiscalStatus:
+        "pending",
+
+      reconciliationStatus:
+        "pending",
+
+      date:
+        date || today(),
+
+      notes,
+
+      createdAt:
+        Date.now()
+    });
+
 
     showToast(
-      "Cambios guardados"
+      "Movimiento guardado"
     );
-
-    return;
   }
 
 
-  /* =====================================
-     MOVIMIENTO NUEVO
-  ===================================== */
-
-  const timestamp =
-    Date.now();
-
-  transactions.push({
-    id: timestamp,
-
-    type:
-      transactionType,
-
-    amount:
-      amount,
-
-    currency:
-      getCurrency(),
-
-    concept:
-      concept,
-
-    category:
-      category,
-
-    client: "",
-
-    project: "",
-
-    source:
-      "manual",
-
-    classificationStatus:
-      "manual",
-
-    date:
-      date,
-
-    notes:
-      notes,
-
-    createdAt:
-      timestamp,
-
-    updatedAt:
-      null
-  });
-
   companyTransactions[
     activeCompanyId
-  ] = transactions;
+  ] =
+    transactions;
+
 
   saveData();
 
@@ -1464,24 +2672,19 @@ function saveTransaction() {
 
   setType("income");
 
-  updateMovementFormUI();
+  renderClientSelector();
+  renderProjectSelector();
 
+  updateMovementFormState();
   updateCompanyUI();
-
   calculate();
 
-  const homeButton =
-    document.querySelectorAll(
-      ".navItem"
-    )[0];
 
   showPage(
     "home",
-    homeButton
-  );
-
-  showToast(
-    "Movimiento guardado"
+    document.querySelectorAll(
+      ".navItem"
+    )[0]
   );
 }
 
@@ -1490,43 +2693,77 @@ function saveTransaction() {
    NAVEGACIÓN
 ========================================= */
 
-function showPage(page, button) {
+function showPage(
+  page,
+  button
+) {
+
   document
-    .querySelectorAll(".page")
-    .forEach(element => {
-      element.classList.remove(
-        "active"
-      );
-    });
+    .querySelectorAll(
+      ".page"
+    )
+    .forEach(
+      element =>
+        element
+          .classList
+          .remove(
+            "active"
+          )
+    );
+
 
   const selectedPage =
-    document.getElementById(page);
+    document.getElementById(
+      page
+    );
 
   if (selectedPage) {
-    selectedPage.classList.add(
-      "active"
-    );
-  }
 
-  document
-    .querySelectorAll(".navItem")
-    .forEach(element => {
-      element.classList.remove(
+    selectedPage
+      .classList
+      .add(
         "active"
       );
-    });
+  }
+
+
+  document
+    .querySelectorAll(
+      ".navItem"
+    )
+    .forEach(
+      element =>
+        element
+          .classList
+          .remove(
+            "active"
+          )
+    );
+
 
   if (button) {
-    button.classList.add(
-      "active"
-    );
+
+    button
+      .classList
+      .add(
+        "active"
+      );
   }
 
-  if (page === "more") {
+
+  if (
+    page === "more"
+  ) {
+
     renderCompanyList();
+    renderClientList();
   }
 
-  window.scrollTo(0, 0);
+
+  window.scrollTo(
+    0,
+    0
+  );
 }
 
 
@@ -1534,7 +2771,10 @@ function showPage(page, button) {
    AVISOS
 ========================================= */
 
+let toastTimer = null;
+
 function showToast(message) {
+
   const toast =
     document.getElementById(
       "toast"
@@ -1542,21 +2782,28 @@ function showToast(message) {
 
   if (!toast) return;
 
+  if (toastTimer) {
+    clearTimeout(
+      toastTimer
+    );
+  }
+
   toast.textContent =
     message || "Guardado";
 
   toast.style.display =
     "block";
 
-  clearTimeout(
-    window.ovToastTimer
-  );
+  toastTimer =
+    setTimeout(
+      () => {
 
-  window.ovToastTimer =
-    setTimeout(() => {
-      toast.style.display =
-        "none";
-    }, 1800);
+        toast.style.display =
+          "none";
+
+      },
+      1800
+    );
 }
 
 
@@ -1565,17 +2812,13 @@ function showToast(message) {
 ========================================= */
 
 function askOV() {
+
   const input =
     document.getElementById(
       "aiQuestion"
     );
 
-  const box =
-    document.getElementById(
-      "aiAnswer"
-    );
-
-  if (!input || !box) return;
+  if (!input) return;
 
   const question =
     input.value
@@ -1590,78 +2833,173 @@ function askOV() {
 
   transactions.forEach(
     transaction => {
-      const amount =
-        Number(
-          transaction.amount
-        ) || 0;
 
       if (
         transaction.type ===
         "income"
       ) {
-        income += amount;
+
+        income +=
+          Number(
+            transaction.amount
+          );
+
       } else {
-        expense += amount;
+
+        expense +=
+          Number(
+            transaction.amount
+          );
       }
     }
   );
 
+
   const company =
     getActiveCompany();
 
-  let response;
+  let response = "";
 
-  if (!question) {
+
+  /*
+    INTENTAR DETECTAR
+    CLIENTE EN LA PREGUNTA
+  */
+
+  const mentionedClient =
+    getClients().find(
+      client =>
+        question.includes(
+          client.name
+            .toLowerCase()
+        )
+    );
+
+
+  /*
+    INTENTAR DETECTAR
+    PROYECTO EN LA PREGUNTA
+  */
+
+  const mentionedProject =
+    getProjects().find(
+      project =>
+        question.includes(
+          project.name
+            .toLowerCase()
+        )
+    );
+
+
+  if (
+    mentionedProject
+  ) {
+
+    const projectTransactions =
+      transactions.filter(
+        transaction =>
+          transaction.projectId ===
+          mentionedProject.id
+      );
+
+    const totals =
+      calculateTransactionTotals(
+        projectTransactions
+      );
+
     response =
-      "Escribe una pregunta sobre tus movimientos.";
+      `${mentionedProject.name} tiene ` +
+      `${money(totals.income)} en ingresos y ` +
+      `${money(totals.expense)} en gastos. ` +
+      `Su flujo registrado es de ` +
+      `${money(totals.balance)}.`;
+
   }
 
   else if (
-    question.includes("gasto") ||
-    question.includes("egreso")
+    mentionedClient
   ) {
+
+    const clientTransactions =
+      transactions.filter(
+        transaction =>
+          transaction.clientId ===
+          mentionedClient.id
+      );
+
+    const totals =
+      calculateTransactionTotals(
+        clientTransactions
+      );
+
+    response =
+      `${mentionedClient.name} tiene ` +
+      `${money(totals.income)} en ingresos y ` +
+      `${money(totals.expense)} en gastos. ` +
+      `El flujo registrado del cliente es ` +
+      `${money(totals.balance)}.`;
+
+  }
+
+  else if (
+    question.includes("gasto")
+  ) {
+
     response =
       `${company.name} tiene ` +
       `${money(expense)} ` +
       `registrados en gastos.`;
+
   }
 
   else if (
     question.includes("ingreso") ||
     question.includes("venta")
   ) {
+
     response =
       `${company.name} tiene ` +
       `${money(income)} ` +
       `registrados en ingresos.`;
+
   }
 
   else if (
-    question.includes("saldo") ||
-    question.includes("flujo") ||
     question.includes("disponible") ||
-    question.includes("resultado")
+    question.includes("saldo") ||
+    question.includes("flujo")
   ) {
+
     response =
       `El flujo registrado de ` +
       `${company.name} es de ` +
       `${money(
         income - expense
       )}.`;
+
   }
 
   else {
+
     response =
       `${company.name} tiene ` +
-      `${money(income)} en ingresos ` +
-      `y ${money(expense)} en gastos, ` +
+      `${money(income)} en ingresos y ` +
+      `${money(expense)} en gastos, ` +
       `dejando un flujo de ` +
       `${money(
         income - expense
       )}.`;
   }
 
-  box.textContent =
+
+  const box =
+    document.getElementById(
+      "aiAnswer"
+    );
+
+  if (!box) return;
+
+  box.innerText =
     response;
 
   box.style.display =
@@ -1670,43 +3008,251 @@ function askOV() {
 
 
 /* =========================================
+   TOTALES DE UNA LISTA
+========================================= */
+
+function calculateTransactionTotals(
+  transactions
+) {
+
+  let income = 0;
+  let expense = 0;
+
+  transactions.forEach(
+    transaction => {
+
+      if (
+        transaction.type ===
+        "income"
+      ) {
+
+        income +=
+          Number(
+            transaction.amount
+          );
+
+      } else {
+
+        expense +=
+          Number(
+            transaction.amount
+          );
+      }
+    }
+  );
+
+  return {
+    income,
+    expense,
+    balance:
+      income - expense
+  };
+}
+
+
+/* =========================================
+   FECHAS
+========================================= */
+
+function today() {
+
+  const now =
+    new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return (
+    `${year}-` +
+    `${month}-` +
+    `${day}`
+  );
+}
+
+
+function formatDate(date) {
+
+  if (!date) return "";
+
+  const parts =
+    date.split("-");
+
+  if (
+    parts.length !== 3
+  ) {
+    return date;
+  }
+
+  return (
+    `${parts[2]}/` +
+    `${parts[1]}/` +
+    `${parts[0]}`
+  );
+}
+
+
+/* =========================================
+   IDs
+========================================= */
+
+function createId(prefix) {
+
+  return (
+    `${prefix}-` +
+    `${Date.now()}-` +
+    `${Math.random()
+      .toString(36)
+      .slice(2, 8)}`
+  );
+}
+
+
+/* =========================================
+   UTILIDADES
+========================================= */
+
+function escapeHTML(value) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    value ?? "";
+
+  return div.innerHTML;
+}
+
+
+function setText(
+  id,
+  value
+) {
+
+  const element =
+    document.getElementById(
+      id
+    );
+
+  if (element) {
+    element.innerText =
+      value;
+  }
+}
+
+
+function setValue(
+  id,
+  value
+) {
+
+  const element =
+    document.getElementById(
+      id
+    );
+
+  if (element) {
+    element.value =
+      value ?? "";
+  }
+}
+
+
+function getValue(id) {
+
+  const element =
+    document.getElementById(
+      id
+    );
+
+  if (!element) return "";
+
+  return element.value || "";
+}
+
+
+/* =========================================
+   MIGRAR MOVIMIENTOS ANTIGUOS
+========================================= */
+
+function migrateTransactions() {
+
+  Object.keys(
+    companyTransactions
+  ).forEach(companyId => {
+
+    companyTransactions[
+      companyId
+    ] =
+      (
+        companyTransactions[
+          companyId
+        ] || []
+      ).map(
+        transaction => ({
+          ...transaction,
+
+          clientId:
+            transaction.clientId ||
+            "",
+
+          projectId:
+            transaction.projectId ||
+            "",
+
+          currency:
+            transaction.currency ||
+            "MXN",
+
+          source:
+            transaction.source ||
+            "manual",
+
+          classificationStatus:
+            transaction.classificationStatus ||
+            (
+              transaction.clientId
+                ? "manual"
+                : "unclassified"
+            ),
+
+          fiscalStatus:
+            transaction.fiscalStatus ||
+            "pending",
+
+          reconciliationStatus:
+            transaction.reconciliationStatus ||
+            "pending"
+        })
+      );
+  });
+}
+
+
+/* =========================================
    INICIAR OV
 ========================================= */
 
 function initializeOV() {
-  /*
-    Comprobar que la empresa activa exista.
-  */
 
-  if (
-    !companies.some(
-      company =>
-        company.id ===
-        activeCompanyId
-    )
-  ) {
-    activeCompanyId =
-      companies[0].id;
-  }
-
-  /*
-    Comprobar que cada empresa
-    tenga su propia lista.
-  */
-
-  companies.forEach(
-    company => {
-      if (
-        !companyTransactions[
-          company.id
-        ]
-      ) {
-        companyTransactions[
-          company.id
-        ] = [];
-      }
-    }
-  );
+  migrateTransactions();
 
   const dateInput =
     document.getElementById(
@@ -1724,11 +3270,20 @@ function initializeOV() {
 
   renderCompanySelector();
 
-  updateMovementFormUI();
+  renderClientSelector();
+
+  renderProjectSelector();
 
   updateCompanyUI();
 
+  updateMovementFormState();
+
   calculate();
 }
+
+
+/* =========================================
+   ARRANQUE
+========================================= */
 
 initializeOV();
