@@ -3322,3 +3322,274 @@ function initializeOV() {
 ========================================= */
 
 initializeOV();
+
+/* =========================================
+   OV APP — MIGRACIÓN LOCAL → SUPABASE
+   FASE 1
+
+   IMPORTANTE:
+   - No elimina datos locales.
+   - No se ejecuta automáticamente.
+   - Evita volver a ejecutarse si ya terminó.
+========================================= */
+
+async function migrateOVLocalDataToSupabase() {
+
+  console.log(
+    "OV MIGRACIÓN: iniciando..."
+  );
+
+
+  /*
+    1. Verificar sesión y empresa
+  */
+
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.user ||
+    !window.OV_SESSION.company
+  ) {
+
+    showToast(
+      "No hay sesión o empresa activa",
+      "error"
+    );
+
+    return;
+  }
+
+
+  /*
+    2. Evitar una segunda migración
+  */
+
+  const migrationCompleted =
+    localStorage.getItem(
+      "ov_supabase_migration_v1"
+    );
+
+
+  if (
+    migrationCompleted === "completed"
+  ) {
+
+    showToast(
+      "Los datos ya fueron migrados"
+    );
+
+    return;
+  }
+
+
+  const userId =
+    window.OV_SESSION.user.id;
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    /*
+      3. Buscar ALTOZANO en Supabase
+    */
+
+    let {
+      data: existingClients,
+      error: clientSearchError
+    } =
+      await ovSupabase
+        .from("clients")
+        .select("id, name")
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "name",
+          "ALTOZANO"
+        );
+
+
+    if (clientSearchError) {
+      throw clientSearchError;
+    }
+
+
+    let clientId;
+
+
+    /*
+      4. Crear ALTOZANO solamente
+      si todavía no existe
+    */
+
+    if (
+      existingClients &&
+      existingClients.length > 0
+    ) {
+
+      clientId =
+        existingClients[0].id;
+
+    } else {
+
+      const {
+        data: newClient,
+        error: clientInsertError
+      } =
+        await ovSupabase
+          .from("clients")
+          .insert({
+            company_id: companyId,
+            name: "ALTOZANO"
+          })
+          .select("id, name")
+          .single();
+
+
+      if (clientInsertError) {
+        throw clientInsertError;
+      }
+
+
+      clientId =
+        newClient.id;
+    }
+
+
+    /*
+      5. Buscar proyecto lagos
+    */
+
+    const {
+      data: existingProjects,
+      error: projectSearchError
+    } =
+      await ovSupabase
+        .from("projects")
+        .select("id, name")
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "client_id",
+          clientId
+        )
+        .eq(
+          "name",
+          "lagos"
+        );
+
+
+    if (projectSearchError) {
+      throw projectSearchError;
+    }
+
+
+    let projectId;
+
+
+    /*
+      6. Crear lagos solamente
+      si todavía no existe
+    */
+
+    if (
+      existingProjects &&
+      existingProjects.length > 0
+    ) {
+
+      projectId =
+        existingProjects[0].id;
+
+    } else {
+
+      const {
+        data: newProject,
+        error: projectInsertError
+      } =
+        await ovSupabase
+          .from("projects")
+          .insert({
+            company_id: companyId,
+            client_id: clientId,
+            name: "lagos"
+          })
+          .select("id, name")
+          .single();
+
+
+      if (projectInsertError) {
+        throw projectInsertError;
+      }
+
+
+      projectId =
+        newProject.id;
+    }
+
+
+    /*
+      7. Guardar referencias de migración.
+
+      TODAVÍA NO MIGRAMOS MOVIMIENTOS.
+
+      Primero comprobaremos que:
+      Grupo Decko → ALTOZANO → lagos
+
+      quedó correctamente creado.
+    */
+
+    localStorage.setItem(
+      "ov_migrated_client_id",
+      clientId
+    );
+
+    localStorage.setItem(
+      "ov_migrated_project_id",
+      projectId
+    );
+
+
+    console.log(
+      "OV MIGRACIÓN FASE 1 COMPLETA",
+      {
+        companyId,
+        clientId,
+        projectId,
+        userId
+      }
+    );
+
+
+    showToast(
+      "Cliente y proyecto migrados",
+      "success"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "OV MIGRACIÓN ERROR:",
+      error
+    );
+
+
+    showToast(
+      "Error al migrar datos",
+      "error"
+    );
+  }
+}
+
+
+/* =========================================
+   EJECUCIÓN MANUAL DE MIGRACIÓN
+
+   NO ACTIVAR TODAVÍA
+========================================= */
+
+// migrateOVLocalDataToSupabase();
