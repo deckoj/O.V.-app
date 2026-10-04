@@ -173,7 +173,111 @@ function getProjects() {
   }
 
   return companyProjects[activeCompanyId];
+} 
+async function loadClientsFromSupabase() {
+
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible para cargar clientes."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await ovSupabase
+        .from("clients")
+        .select(`
+          id,
+          name,
+          created_at
+        `)
+        .eq(
+          "company_id",
+          companyId
+        )
+        .order(
+          "created_at",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const remoteClients =
+      (data || []).map(
+        client => ({
+
+          id:
+            client.id,
+
+          supabaseId:
+            client.id,
+
+          name:
+            client.name,
+
+          createdAt:
+            client.created_at
+              ? new Date(
+                  client.created_at
+                ).getTime()
+              : Date.now()
+        })
+      );
+
+
+    companyClients[
+      activeCompanyId
+    ] =
+      remoteClients;
+
+
+    saveData();
+
+    renderClientList();
+    renderClientSelector();
+
+
+    console.info(
+      "OV Supabase: clientes cargados.",
+      remoteClients.length
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al cargar clientes:",
+      error
+    );
+
+    return false;
+  }
 }
+
 async function loadTransactionsFromSupabase() {
 
   if (
