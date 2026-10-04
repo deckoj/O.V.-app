@@ -28,7 +28,79 @@
 
 
 <main>
+<!-- =========================
+     LOGIN OV
+========================== -->
 
+<section
+  id="loginScreen"
+  class="loginScreen">
+
+  <div class="loginCard">
+
+    <div class="loginLogo">
+      OV
+    </div>
+
+    <h1>
+      Bienvenido a OV
+    </h1>
+
+    <p>
+      Inteligencia financiera empresarial
+    </p>
+
+
+    <div class="loginField">
+
+      <label for="loginEmail">
+        Correo electrónico
+      </label>
+
+      <input
+        id="loginEmail"
+        type="email"
+        autocomplete="email"
+        placeholder="correo@empresa.com"
+      >
+
+    </div>
+
+
+    <div class="loginField">
+
+      <label for="loginPassword">
+        Contraseña
+      </label>
+
+      <input
+        id="loginPassword"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Contraseña"
+      >
+
+    </div>
+
+
+    <button
+      type="button"
+      class="primary loginButton"
+      onclick="handleOVLogin()">
+
+      Iniciar sesión
+
+    </button>
+
+
+    <div
+      id="loginMessage"
+      class="loginMessage">
+    </div>
+
+  </div>
+
+</section>
   <!-- =========================
        INICIO
   ========================== -->
