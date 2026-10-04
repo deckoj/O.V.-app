@@ -123,7 +123,67 @@ async function checkSupabaseConnection() {
       company: activeCompany
     };
 
+/*
+  7. Sincronizar empresa de Supabase
+  con la interfaz de OV
 
+  Por ahora SOLO actualizamos
+  el nombre visible.
+
+  No modificamos movimientos,
+  clientes ni proyectos.
+*/
+
+const companyTitle =
+  document.getElementById(
+    "companyTitle"
+  );
+
+const moreCompanyName =
+  document.getElementById(
+    "moreCompanyName"
+  );
+
+const movementCompanyText =
+  document.getElementById(
+    "movementCompanyText"
+  );
+
+const addCompanyText =
+  document.getElementById(
+    "addCompanyText"
+  );
+
+const aiCompanyText =
+  document.getElementById(
+    "aiCompanyText"
+  );
+
+
+if (companyTitle) {
+  companyTitle.textContent =
+    activeCompany.name;
+}
+
+if (moreCompanyName) {
+  moreCompanyName.textContent =
+    activeCompany.name;
+}
+
+if (movementCompanyText) {
+  movementCompanyText.textContent =
+    activeCompany.name;
+}
+
+if (addCompanyText) {
+  addCompanyText.textContent =
+    activeCompany.name;
+}
+
+if (aiCompanyText) {
+  aiCompanyText.textContent =
+    activeCompany.name;
+}
     /*
       7. Resultado técnico
       Solo visible en consola
