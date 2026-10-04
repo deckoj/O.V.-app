@@ -2451,6 +2451,313 @@ function setType(type) {
    GUARDAR / ACTUALIZAR
 ========================================= */
 
+async function saveTransactionToSupabase(
+  transaction
+) {
+
+  /*
+    Guardado remoto.
+    El movimiento local sigue siendo
+    la fuente de respaldo por ahora.
+  */
+
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.user ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible."
+    );
+
+    return false;
+  }
+
+
+  const userId =
+    window.OV_SESSION.user.id;
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    let supabaseClientId =
+      null;
+
+    let supabaseProjectId =
+      null;
+
+
+    /*
+      CLIENTE
+      Convertir ID local → UUID Supabase
+    */
+
+    if (transaction.clientId) {
+
+      const localClient =
+        getClients().find(
+          client =>
+            client.id ===
+            transaction.clientId
+        );
+
+
+      if (localClient) {
+
+        const {
+          data: remoteClients,
+          error: clientError
+        } =
+          await ovSupabase
+            .from("clients")
+            .select("id")
+            .eq(
+              "company_id",
+              companyId
+            )
+            .eq(
+              "name",
+              localClient.name
+            )
+            .limit(1);
+
+
+        if (clientError) {
+          throw clientError;
+        }
+
+
+        if (
+          remoteClients &&
+          remoteClients.length > 0
+        ) {
+
+          supabaseClientId =
+            remoteClients[0].id;
+        }
+      }
+    }
+
+
+    /*
+      PROYECTO
+      Convertir ID local → UUID Supabase
+    */
+
+    if (transaction.projectId) {
+
+      const localProject =
+        getProjects().find(
+          project =>
+            project.id ===
+            transaction.projectId
+        );
+
+
+      if (localProject) {
+
+        let projectQuery =
+          ovSupabase
+            .from("projects")
+            .select(
+              "id, client_id"
+            )
+            .eq(
+              "company_id",
+              companyId
+            )
+            .eq(
+              "name",
+              localProject.name
+            );
+
+
+        if (supabaseClientId) {
+
+          projectQuery =
+            projectQuery.eq(
+              "client_id",
+              supabaseClientId
+            );
+        }
+
+
+        const {
+          data: remoteProjects,
+          error: projectError
+        } =
+          await projectQuery
+            .limit(1);
+
+
+        if (projectError) {
+          throw projectError;
+        }
+
+
+        if (
+          remoteProjects &&
+          remoteProjects.length > 0
+        ) {
+
+          supabaseProjectId =
+            remoteProjects[0].id;
+
+          /*
+            Si encontramos el proyecto,
+            usamos también su cliente.
+          */
+
+          if (
+            !supabaseClientId &&
+            remoteProjects[0].client_id
+          ) {
+
+            supabaseClientId =
+              remoteProjects[0].client_id;
+          }
+        }
+      }
+    }
+
+
+    /*
+      Evitar duplicados
+    */
+
+    const {
+      data: existing,
+      error: existingError
+    } =
+      await ovSupabase
+        .from("transactions")
+        .select("id")
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "legacy_id",
+          transaction.id
+        )
+        .limit(1);
+
+
+    if (existingError) {
+      throw existingError;
+    }
+
+
+    if (
+      existing &&
+      existing.length > 0
+    ) {
+
+      console.info(
+        "OV Supabase: movimiento ya existe."
+      );
+
+      return true;
+    }
+
+
+    /*
+      INSERTAR MOVIMIENTO
+    */
+
+    const {
+      error: insertError
+    } =
+      await ovSupabase
+        .from("transactions")
+        .insert({
+
+          company_id:
+            companyId,
+
+          client_id:
+            supabaseClientId,
+
+          project_id:
+            supabaseProjectId,
+
+          created_by:
+            userId,
+
+          type:
+            transaction.type,
+
+          amount:
+            transaction.amount,
+
+          currency:
+            transaction.currency ||
+            "MXN",
+
+          concept:
+            transaction.concept,
+
+          category:
+            transaction.category ||
+            null,
+
+          notes:
+            transaction.notes ||
+            null,
+
+          transaction_date:
+            transaction.date ||
+            today(),
+
+          source:
+            transaction.source ||
+            "manual",
+
+          classification_status:
+            transaction.classificationStatus ||
+            "unclassified",
+
+          fiscal_status:
+            transaction.fiscalStatus ||
+            "pending",
+
+          reconciliation_status:
+            transaction.reconciliationStatus ||
+            "pending",
+
+          legacy_id:
+            transaction.id
+        });
+
+
+    if (insertError) {
+      throw insertError;
+    }
+
+
+    console.info(
+      "OV Supabase: movimiento guardado.",
+      transaction.id
+    );
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al guardar movimiento:",
+      error
+    );
+
+    return false;
+  }
+}
+
 function saveTransaction() {
 
   const amount =
@@ -2607,7 +2914,7 @@ function saveTransaction() {
       MOVIMIENTO NUEVO
     */
 
-  getTransactions().push({
+  const newTransaction = {
 
       id:
         Date.now(),
@@ -2651,8 +2958,14 @@ function saveTransaction() {
 
       createdAt:
         Date.now()
-    });
+    };
+getTransactions().push(
+  newTransaction
+);
 
+saveTransactionToSupabase(
+  newTransaction
+);
 
     showToast(
       "Movimiento guardado"
