@@ -3379,8 +3379,7 @@ async function migrateOVLocalDataToSupabase() {
       getProjects();
 
     const localTransactions =
-      transactions || [];
-
+  getTransactions();
 
     /*
       3. Localizar ALTOZANO local
