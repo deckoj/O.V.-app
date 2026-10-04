@@ -44,18 +44,14 @@ let companyTransactions =
   JSON.parse(localStorage.getItem("ov_company_transactions"));
 
 if (!companyTransactions) {
-
   companyTransactions = {};
   companyTransactions["grupo-decko"] = oldTransactions;
-
 }
 
 companies.forEach(company => {
-
   if (!companyTransactions[company.id]) {
     companyTransactions[company.id] = [];
   }
-
 });
 
 
@@ -64,37 +60,30 @@ companies.forEach(company => {
 ================================ */
 
 function getActiveCompany() {
-
   return companies.find(
     company => company.id === activeCompanyId
   ) || companies[0];
-
 }
 
 function getCurrency() {
-
   return getActiveCompany()?.currency ||
     OV_CONFIG.defaultCurrency;
-
 }
 
 function getTransactions() {
-
   if (!companyTransactions[activeCompanyId]) {
     companyTransactions[activeCompanyId] = [];
   }
 
   return companyTransactions[activeCompanyId];
-
 }
 
 
 /* ==============================
-   FORMATO MONETARIO
+   DINERO
 ================================ */
 
 function money(number, currency = getCurrency()) {
-
   const value = Number(number) || 0;
 
   const formatted =
@@ -109,6 +98,102 @@ function money(number, currency = getCurrency()) {
     ).format(value);
 
   return `${formatted} ${currency}`;
+}
+
+
+/* ==============================
+   CAMPO MONTO CON COMAS
+================================ */
+
+function formatAmountInput(value) {
+
+  if (!value) return "";
+
+  let clean =
+    String(value)
+      .replace(/,/g, "")
+      .replace(/[^\d.]/g, "");
+
+  const firstDot =
+    clean.indexOf(".");
+
+  if (firstDot !== -1) {
+
+    clean =
+      clean.substring(0, firstDot + 1) +
+      clean
+        .substring(firstDot + 1)
+        .replace(/\./g, "");
+
+  }
+
+  let [integerPart, decimalPart] =
+    clean.split(".");
+
+  integerPart =
+    integerPart.replace(/^0+(?=\d)/, "");
+
+  if (!integerPart) {
+    integerPart = "0";
+  }
+
+  const formattedInteger =
+    Number(integerPart).toLocaleString("en-US");
+
+  if (clean.includes(".")) {
+
+    decimalPart =
+      (decimalPart || "").slice(0, 2);
+
+    return `${formattedInteger}.${decimalPart}`;
+  }
+
+  return formattedInteger;
+}
+
+
+function getAmountValue() {
+
+  const input =
+    document.getElementById("amount");
+
+  if (!input) return 0;
+
+  const clean =
+    input.value
+      .replace(/,/g, "")
+      .replace(/[^\d.]/g, "");
+
+  return Number(clean) || 0;
+}
+
+
+function setupAmountInput() {
+
+  const input =
+    document.getElementById("amount");
+
+  if (!input) return;
+
+  /* Cambiamos el campo a texto para permitir comas */
+  input.type = "text";
+  input.inputMode = "decimal";
+  input.autocomplete = "off";
+
+  input.addEventListener("input", () => {
+
+    const cursorWasAtEnd =
+      input.selectionStart === input.value.length;
+
+    input.value =
+      formatAmountInput(input.value);
+
+    if (cursorWasAtEnd) {
+      const end = input.value.length;
+      input.setSelectionRange(end, end);
+    }
+
+  });
 
 }
 
@@ -168,6 +253,7 @@ function renderCompanySelector() {
 
 }
 
+
 function changeCompany() {
 
   activeCompanyId =
@@ -178,7 +264,6 @@ function changeCompany() {
   calculate();
 
   showToast("Empresa cambiada");
-
 }
 
 
@@ -205,13 +290,12 @@ function createCompany() {
     );
 
   if (alreadyExists) {
-
     alert("Ya existe una empresa con ese nombre.");
     return;
-
   }
 
-  const id = "company-" + Date.now();
+  const id =
+    "company-" + Date.now();
 
   companies.push({
     id,
@@ -220,17 +304,14 @@ function createCompany() {
   });
 
   companyTransactions[id] = [];
-
   activeCompanyId = id;
 
   saveData();
   renderCompanySelector();
   updateCompanyUI();
-  renderCompanyList();
   calculate();
 
   showToast("Empresa creada");
-
 }
 
 
@@ -241,10 +322,8 @@ function createCompany() {
 function deleteCompany(id) {
 
   if (companies.length === 1) {
-
     alert("OV debe tener al menos una empresa.");
     return;
-
   }
 
   const company =
@@ -272,11 +351,9 @@ function deleteCompany(id) {
   saveData();
   renderCompanySelector();
   updateCompanyUI();
-  renderCompanyList();
   calculate();
 
   showToast("Empresa eliminada");
-
 }
 
 
@@ -350,16 +427,13 @@ function renderCompanyList() {
         () => deleteCompany(company.id);
 
       right.appendChild(button);
-
     }
 
     row.appendChild(left);
     row.appendChild(right);
 
     container.appendChild(row);
-
   });
-
 }
 
 
@@ -369,46 +443,34 @@ function renderCompanyList() {
 
 function updateCompanyUI() {
 
-  const company = getActiveCompany();
+  const company =
+    getActiveCompany();
 
   if (!company) return;
 
-  const companyTitle =
-    document.getElementById("companyTitle");
+  setText("companyTitle", company.name);
 
-  const movementText =
-    document.getElementById("movementCompanyText");
+  setText(
+    "movementCompanyText",
+    `Historial de ${company.name}.`
+  );
 
-  const addText =
-    document.getElementById("addCompanyText");
+  setText(
+    "addCompanyText",
+    `Registrando movimiento en ${company.name} · ${getCurrency()}.`
+  );
 
-  const aiText =
-    document.getElementById("aiCompanyText");
+  setText(
+    "aiCompanyText",
+    `Analizando la información de ${company.name}.`
+  );
 
-  const moreName =
-    document.getElementById("moreCompanyName");
-
-  if (companyTitle)
-    companyTitle.textContent = company.name;
-
-  if (movementText)
-    movementText.textContent =
-      `Historial de ${company.name}.`;
-
-  if (addText)
-    addText.textContent =
-      `Registrando movimiento en ${company.name} · ${getCurrency()}.`;
-
-  if (aiText)
-    aiText.textContent =
-      `Analizando la información de ${company.name}.`;
-
-  if (moreName)
-    moreName.textContent =
-      `${company.name} · ${getCurrency()}`;
+  setText(
+    "moreCompanyName",
+    `${company.name} · ${getCurrency()}`
+  );
 
   renderCompanyList();
-
 }
 
 
@@ -443,7 +505,6 @@ function calculate() {
   setText("result", money(balance));
 
   renderTransactions();
-
 }
 
 
@@ -483,7 +544,6 @@ function renderTransactions() {
     all.innerHTML = empty;
 
     return;
-
   }
 
   sorted.forEach((transaction, index) => {
@@ -526,9 +586,7 @@ function renderTransactions() {
     if (index < 3) {
       recent.innerHTML += html;
     }
-
   });
-
 }
 
 
@@ -559,7 +617,6 @@ function setType(type) {
       type === "expense"
     );
   }
-
 }
 
 
@@ -570,9 +627,7 @@ function setType(type) {
 function saveTransaction() {
 
   const amount =
-    Number(
-      document.getElementById("amount").value
-    );
+    getAmountValue();
 
   const concept =
     document.getElementById("concept")
@@ -592,14 +647,12 @@ function saveTransaction() {
 
     alert("Ingresa un monto válido.");
     return;
-
   }
 
   if (!concept) {
 
     alert("Escribe el concepto del movimiento.");
     return;
-
   }
 
   const transactions =
@@ -634,7 +687,6 @@ function saveTransaction() {
         .slice(0, 10),
 
     notes
-
   });
 
   companyTransactions[activeCompanyId] =
@@ -654,7 +706,6 @@ function saveTransaction() {
     "home",
     document.querySelectorAll(".navItem")[0]
   );
-
 }
 
 
@@ -690,7 +741,6 @@ function showPage(page, button) {
   }
 
   window.scrollTo(0, 0);
-
 }
 
 
@@ -711,11 +761,8 @@ function showToast(message) {
   toast.style.display = "block";
 
   setTimeout(() => {
-
     toast.style.display = "none";
-
   }, 1800);
-
 }
 
 
@@ -791,7 +838,6 @@ function askOV() {
       `${company.name} tiene ${money(income)} ` +
       `en ingresos y ${money(expense)} en gastos, ` +
       `dejando un flujo de ${money(income - expense)}.`;
-
   }
 
   const box =
@@ -801,7 +847,6 @@ function askOV() {
 
   box.innerText = response;
   box.style.display = "block";
-
 }
 
 
@@ -821,12 +866,11 @@ function formatDate(date) {
   }
 
   return `${parts[2]}/${parts[1]}/${parts[0]}`;
-
 }
 
 
 /* ==============================
-   SEGURIDAD
+   SEGURIDAD / UTILIDADES
 ================================ */
 
 function escapeHTML(value) {
@@ -838,8 +882,8 @@ function escapeHTML(value) {
     value ?? "";
 
   return div.innerHTML;
-
 }
+
 
 function setText(id, value) {
 
@@ -849,7 +893,6 @@ function setText(id, value) {
   if (element) {
     element.innerText = value;
   }
-
 }
 
 
@@ -868,14 +911,14 @@ function initializeOV() {
       new Date()
         .toISOString()
         .slice(0, 10);
-
   }
+
+  setupAmountInput();
 
   saveData();
   renderCompanySelector();
   updateCompanyUI();
   calculate();
-
 }
 
 initializeOV();
