@@ -203,6 +203,20 @@ if (aiCompanyText) {
       }
     );
 if (
+  typeof loadClientsFromSupabase === "function"
+) {
+  await loadClientsFromSupabase();
+}
+
+
+if (
+  typeof loadProjectsFromSupabase === "function"
+) {
+  await loadProjectsFromSupabase();
+}
+
+
+if (
   typeof loadTransactionsFromSupabase === "function"
 ) {
   await loadTransactionsFromSupabase();
