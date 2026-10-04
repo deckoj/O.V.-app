@@ -1239,4 +1239,18 @@ nav {
   font-size: 13px;
 
   line-height: 1.4;
+
+}
+
+
+/* =========================================
+   OV APP — ESTADOS DE SESIÓN
+========================================= */
+
+.toast.success {
+  color: #22c55e;
+}
+
+.toast.success::first-letter {
+  color: #22c55e;
 }
