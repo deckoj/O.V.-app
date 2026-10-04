@@ -2,148 +2,242 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#101720">
 <title>OV</title>
 
 <style>
 *{box-sizing:border-box}
 
+:root{
+  --dark:#111820;
+  --bg:#f5f7f9;
+  --card:#fff;
+  --muted:#89939f;
+  --green:#2f8f5b;
+  --red:#c44738;
+  --border:#e7e9ec;
+}
+
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:#f5f7f9;
+  background:var(--bg);
   color:#17212b;
+  padding-bottom:100px;
 }
 
 header{
-  background:#111820;
+  background:var(--dark);
   color:white;
-  padding:22px 20px;
+  padding:32px 22px 28px;
 }
 
 .logo{
-  font-size:28px;
-  font-weight:800;
-  letter-spacing:2px;
+  font-size:32px;
+  font-weight:900;
+  letter-spacing:3px;
 }
 
 .subtitle{
-  font-size:13px;
-  color:#9ca8b5;
-  margin-top:4px;
+  margin-top:6px;
+  color:#9fa9b5;
+  font-size:14px;
 }
 
 main{
-  max-width:900px;
+  max-width:850px;
   margin:auto;
-  padding:22px 16px 100px;
+  padding:24px 18px;
 }
+
+.page{display:none}
+.page.active{display:block}
 
 .company{
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  margin-bottom:22px;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:24px;
 }
 
+.company small{color:#6f7984}
+
 .company h2{
-  margin:0;
-  font-size:22px;
+  margin:3px 0 0;
+  font-size:25px;
+}
+
+select,input,textarea{
+  width:100%;
+  border:1px solid #dfe3e7;
+  background:white;
+  padding:14px;
+  border-radius:13px;
+  font-size:16px;
+  font-family:inherit;
 }
 
 .company select{
-  border:1px solid #ddd;
-  background:white;
-  padding:10px;
-  border-radius:10px;
+  width:auto;
+  max-width:48%;
+  font-weight:600;
 }
 
 .balance{
-  background:#17212b;
+  background:var(--dark);
   color:white;
-  padding:25px;
-  border-radius:20px;
-  margin-bottom:18px;
+  padding:27px;
+  border-radius:23px;
 }
 
 .balance small{
-  color:#aeb8c2;
+  color:#aeb7c2;
+  font-size:15px;
 }
 
 .balance h1{
-  font-size:38px;
-  margin:8px 0;
+  margin:10px 0 6px;
+  font-size:39px;
 }
 
-.positive{
-  color:#58d68d;
-  font-size:14px;
+.monthStatus{
+  color:#63d494;
+  font-weight:700;
 }
 
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
+  margin-top:14px;
 }
 
 .card{
   background:white;
-  padding:18px;
-  border-radius:16px;
-  box-shadow:0 3px 12px rgba(0,0,0,.05);
+  border-radius:19px;
+  padding:20px;
+  box-shadow:0 3px 12px rgba(0,0,0,.035);
 }
 
 .card small{
-  color:#7b8794;
+  color:var(--muted);
+  font-weight:600;
 }
 
-.card h2{
-  margin:8px 0 0;
-}
+.card h2{margin:8px 0 0}
 
-.income h2{
-  color:#198754;
-}
+.income h2{color:var(--green)}
+.expense h2{color:var(--red)}
 
-.expense h2{
-  color:#c0392b;
-}
-
-.section-title{
-  margin:28px 0 12px;
-  font-size:18px;
+.sectionTitle{
+  font-size:21px;
+  margin:28px 0 13px;
 }
 
 .transaction{
   display:flex;
   justify-content:space-between;
+  align-items:center;
+  gap:15px;
   background:white;
-  padding:15px;
-  margin-bottom:8px;
-  border-radius:12px;
+  padding:16px;
+  border-radius:14px;
+  margin-bottom:9px;
 }
 
 .transaction small{
-  color:#87919b;
+  color:var(--muted);
 }
 
-.ai{
-  background:#e9eef3;
-  padding:20px;
+.amountIncome{
+  color:var(--green);
+  font-weight:750;
+  white-space:nowrap;
+}
+
+.amountExpense{
+  color:var(--red);
+  font-weight:750;
+  white-space:nowrap;
+}
+
+.empty{
+  background:white;
+  padding:30px 20px;
+  text-align:center;
   border-radius:18px;
-  margin-top:25px;
+  color:var(--muted);
 }
 
-.ai h3{
-  margin-top:0;
+.formCard{
+  background:white;
+  border-radius:20px;
+  padding:20px;
 }
 
-.ai input{
-  width:100%;
-  padding:14px;
+.field{margin-bottom:17px}
+
+label{
+  display:block;
+  font-weight:650;
+  margin-bottom:7px;
+}
+
+.typeSelector{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  background:#eef1f4;
+  padding:4px;
+  border-radius:13px;
+  margin-bottom:20px;
+}
+
+.typeButton{
   border:0;
-  border-radius:12px;
+  padding:12px;
+  border-radius:10px;
+  background:transparent;
+  font-weight:700;
   font-size:15px;
+}
+
+.typeButton.active{
+  background:var(--dark);
+  color:white;
+}
+
+.primary{
+  width:100%;
+  border:0;
+  background:var(--dark);
+  color:white;
+  padding:16px;
+  border-radius:14px;
+  font-size:16px;
+  font-weight:750;
+}
+
+.aiCard{
+  background:var(--dark);
+  color:white;
+  padding:23px;
+  border-radius:21px;
+}
+
+.aiCard p{color:#aeb7c2}
+
+.aiCard input{
+  margin-top:10px;
+}
+
+.aiAnswer{
+  margin-top:16px;
+  padding:15px;
+  background:#202a35;
+  border-radius:13px;
+  display:none;
 }
 
 nav{
@@ -151,35 +245,49 @@ nav{
   bottom:0;
   left:0;
   right:0;
-  background:white;
+  z-index:20;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(12px);
   border-top:1px solid #ddd;
   display:flex;
   justify-content:space-around;
-  padding:12px 4px 22px;
+  padding:10px 3px calc(12px + env(safe-area-inset-bottom));
 }
 
-nav div{
-  text-align:center;
-  font-size:12px;
-  color:#6c7781;
-}
-
-nav .active{
-  color:#111820;
-  font-weight:bold;
-}
-
-button{
-  background:#17212b;
-  color:white;
+.navItem{
   border:0;
-  border-radius:12px;
-  padding:12px 16px;
+  background:none;
+  color:#7b8490;
+  font-size:11px;
   font-weight:600;
+  min-width:60px;
+}
+
+.navIcon{
+  display:block;
+  font-size:20px;
+  height:25px;
+}
+
+.navItem.active{color:#111820}
+
+.toast{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:105px;
+  background:#111820;
+  color:white;
+  padding:12px 18px;
+  border-radius:30px;
+  display:none;
+  z-index:50;
+  font-size:14px;
 }
 
 @media(max-width:500px){
-  .balance h1{font-size:34px}
+  .balance h1{font-size:36px}
+  .card{padding:18px}
 }
 </style>
 </head>
@@ -193,93 +301,495 @@ button{
 
 <main>
 
-<div class="company">
-  <div>
-    <small>Empresa</small>
-    <h2>Grupo Decko</h2>
+<section id="home" class="page active">
+
+  <div class="company">
+    <div>
+      <small>Empresa</small>
+      <h2>Grupo Decko</h2>
+    </div>
+
+    <select>
+      <option>Grupo Decko</option>
+    </select>
   </div>
 
-  <select>
-    <option>Grupo Decko</option>
-    <option>Restaurante</option>
-    <option>Xicco Campestre</option>
-    <option>+ Nueva empresa</option>
-  </select>
-</div>
-
-<div class="balance">
-  <small>Disponible</small>
-  <h1>$428,350</h1>
-  <div class="positive">▲ 12.4% este mes</div>
-</div>
-
-<div class="grid">
-
-  <div class="card income">
-    <small>Ingresos</small>
-    <h2>$582,400</h2>
+  <div class="balance">
+    <small>Disponible</small>
+    <h1 id="balance">$0</h1>
+    <div class="monthStatus">● Flujo actualizado</div>
   </div>
 
-  <div class="card expense">
-    <small>Gastos</small>
-    <h2>$154,050</h2>
+  <div class="grid">
+    <div class="card income">
+      <small>Ingresos</small>
+      <h2 id="income">$0</h2>
+    </div>
+
+    <div class="card expense">
+      <small>Gastos</small>
+      <h2 id="expense">$0</h2>
+    </div>
   </div>
 
-</div>
+  <h3 class="sectionTitle">Flujo del mes</h3>
 
-<h3 class="section-title">Flujo del mes</h3>
-
-<div class="card">
-  <small>Resultado</small>
-  <h2>$428,350</h2>
-  <p>Ingresos menos gastos registrados.</p>
-</div>
-
-<h3 class="section-title">Movimientos recientes</h3>
-
-<div class="transaction">
-  <div>
-    <strong>Altozano</strong><br>
-    <small>Mantenimiento</small>
+  <div class="card">
+    <small>Resultado</small>
+    <h2 id="result">$0</h2>
+    <p style="color:#89939f">Ingresos menos gastos registrados.</p>
   </div>
-  <strong style="color:#198754">+$85,000</strong>
-</div>
 
-<div class="transaction">
-  <div>
-    <strong>Nómina</strong><br>
-    <small>Personal operativo</small>
+  <h3 class="sectionTitle">Movimientos recientes</h3>
+  <div id="recentTransactions"></div>
+
+</section>
+
+
+<section id="movements" class="page">
+
+  <h1>Movimientos</h1>
+  <p style="color:#89939f">Historial de ingresos y gastos.</p>
+
+  <div id="allTransactions"></div>
+
+</section>
+
+
+<section id="add" class="page">
+
+  <h1>Agregar movimiento</h1>
+  <p style="color:#89939f">
+    Registra un ingreso o gasto de Grupo Decko.
+  </p>
+
+  <div class="formCard">
+
+    <div class="typeSelector">
+      <button id="incomeBtn" class="typeButton active"
+      onclick="setType('income')">Ingreso</button>
+
+      <button id="expenseBtn" class="typeButton"
+      onclick="setType('expense')">Gasto</button>
+    </div>
+
+    <div class="field">
+      <label>Monto</label>
+      <input id="amount" type="number"
+      inputmode="decimal" placeholder="$0.00">
+    </div>
+
+    <div class="field">
+      <label>Concepto</label>
+      <input id="concept"
+      placeholder="Ej. Mantenimiento Altozano">
+    </div>
+
+    <div class="field">
+      <label>Categoría</label>
+      <select id="category">
+        <option>Ventas</option>
+        <option>Mantenimiento</option>
+        <option>Nómina</option>
+        <option>Materiales</option>
+        <option>Proveedores</option>
+        <option>Transporte</option>
+        <option>Impuestos</option>
+        <option>Servicios</option>
+        <option>Otros</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Fecha</label>
+      <input id="date" type="date">
+    </div>
+
+    <div class="field">
+      <label>Notas</label>
+      <textarea id="notes"
+      rows="3"
+      placeholder="Información adicional (opcional)"></textarea>
+    </div>
+
+    <button class="primary" onclick="saveTransaction()">
+      Guardar movimiento
+    </button>
+
   </div>
-  <strong style="color:#c0392b">-$42,500</strong>
-</div>
 
-<div class="transaction">
-  <div>
-    <strong>Materiales</strong><br>
-    <small>Proveedor</small>
+</section>
+
+
+<section id="ai" class="page">
+
+  <h1>OV IA</h1>
+
+  <div class="aiCard">
+    <h2>Tu analista financiero</h2>
+
+    <p>
+      Consulta la información registrada en OV.
+    </p>
+
+    <input id="aiQuestion"
+    placeholder="Ej. ¿Cuánto he gastado?">
+
+    <button
+      class="primary"
+      style="margin-top:12px;background:white;color:#111820"
+      onclick="askOV()">
+      Preguntar a OV
+    </button>
+
+    <div id="aiAnswer" class="aiAnswer"></div>
+
   </div>
-  <strong style="color:#c0392b">-$18,750</strong>
-</div>
 
-<div class="ai">
-  <h3>OV Inteligencia</h3>
-  <p>Pregúntale a OV sobre las finanzas de tu empresa.</p>
+</section>
 
-  <input
-    type="text"
-    placeholder="Ej. ¿Cuánto puedo gastar esta semana?"
-  >
-</div>
+
+<section id="more" class="page">
+
+  <h1>Más</h1>
+
+  <div class="card">
+    <strong>Empresa</strong>
+    <p>Grupo Decko</p>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <strong>OV</strong>
+    <p style="color:#89939f">
+      Versión MVP 0.2
+    </p>
+  </div>
+
+</section>
 
 </main>
 
+
 <nav>
-  <div class="active">⌂<br>Inicio</div>
-  <div>↕<br>Movimientos</div>
-  <div>＋<br>Agregar</div>
-  <div>◎<br>OV IA</div>
-  <div>☰<br>Más</div>
+
+<button class="navItem active" onclick="showPage('home',this)">
+<span class="navIcon">⌂</span>
+Inicio
+</button>
+
+<button class="navItem" onclick="showPage('movements',this)">
+<span class="navIcon">↕</span>
+Movimientos
+</button>
+
+<button class="navItem" onclick="showPage('add',this)">
+<span class="navIcon">＋</span>
+Agregar
+</button>
+
+<button class="navItem" onclick="showPage('ai',this)">
+<span class="navIcon">◎</span>
+OV IA
+</button>
+
+<button class="navItem" onclick="showPage('more',this)">
+<span class="navIcon">☰</span>
+Más
+</button>
+
 </nav>
+
+<div id="toast" class="toast">
+Movimiento guardado
+</div>
+
+
+<script>
+
+let transactionType="income";
+
+let transactions=
+JSON.parse(localStorage.getItem("ov_transactions")) || [
+{
+ id:1,
+ type:"income",
+ amount:85000,
+ concept:"Altozano",
+ category:"Mantenimiento",
+ date:new Date().toISOString().slice(0,10)
+},
+{
+ id:2,
+ type:"expense",
+ amount:42500,
+ concept:"Nómina",
+ category:"Nómina",
+ date:new Date().toISOString().slice(0,10)
+},
+{
+ id:3,
+ type:"expense",
+ amount:18750,
+ concept:"Materiales",
+ category:"Materiales",
+ date:new Date().toISOString().slice(0,10)
+}
+];
+
+function money(number){
+ return new Intl.NumberFormat(
+   "es-MX",
+   {
+     style:"currency",
+     currency:"MXN",
+     maximumFractionDigits:0
+   }
+ ).format(number);
+}
+
+function saveData(){
+ localStorage.setItem(
+   "ov_transactions",
+   JSON.stringify(transactions)
+ );
+}
+
+function calculate(){
+
+ let income=0;
+ let expense=0;
+
+ transactions.forEach(t=>{
+   if(t.type==="income") income+=Number(t.amount);
+   else expense+=Number(t.amount);
+ });
+
+ const balance=income-expense;
+
+ document.getElementById("income").innerText=money(income);
+ document.getElementById("expense").innerText=money(expense);
+ document.getElementById("balance").innerText=money(balance);
+ document.getElementById("result").innerText=money(balance);
+
+ renderTransactions();
+}
+
+function renderTransactions(){
+
+ const sorted=[...transactions].sort(
+   (a,b)=>b.id-a.id
+ );
+
+ const recent=document.getElementById("recentTransactions");
+ const all=document.getElementById("allTransactions");
+
+ recent.innerHTML="";
+ all.innerHTML="";
+
+ if(sorted.length===0){
+   const empty='<div class="empty">Aún no hay movimientos.</div>';
+   recent.innerHTML=empty;
+   all.innerHTML=empty;
+   return;
+ }
+
+ sorted.forEach((t,index)=>{
+
+   const sign=t.type==="income" ? "+" : "-";
+   const amountClass=
+   t.type==="income" ? "amountIncome" : "amountExpense";
+
+   const html=`
+   <div class="transaction">
+     <div>
+       <strong>${escapeHTML(t.concept)}</strong><br>
+       <small>${escapeHTML(t.category)} · ${formatDate(t.date)}</small>
+     </div>
+
+     <div class="${amountClass}">
+       ${sign}${money(t.amount)}
+     </div>
+   </div>`;
+
+   all.innerHTML+=html;
+
+   if(index<3) recent.innerHTML+=html;
+
+ });
+
+}
+
+function setType(type){
+
+ transactionType=type;
+
+ document.getElementById("incomeBtn")
+ .classList.toggle("active",type==="income");
+
+ document.getElementById("expenseBtn")
+ .classList.toggle("active",type==="expense");
+
+}
+
+function saveTransaction(){
+
+ const amount=
+ Number(document.getElementById("amount").value);
+
+ const concept=
+ document.getElementById("concept").value.trim();
+
+ const category=
+ document.getElementById("category").value;
+
+ const date=
+ document.getElementById("date").value;
+
+ const notes=
+ document.getElementById("notes").value.trim();
+
+ if(!amount || amount<=0){
+   alert("Ingresa un monto válido.");
+   return;
+ }
+
+ if(!concept){
+   alert("Escribe el concepto del movimiento.");
+   return;
+ }
+
+ transactions.push({
+   id:Date.now(),
+   type:transactionType,
+   amount,
+   concept,
+   category,
+   date:date || new Date().toISOString().slice(0,10),
+   notes
+ });
+
+ saveData();
+ calculate();
+
+ document.getElementById("amount").value="";
+ document.getElementById("concept").value="";
+ document.getElementById("notes").value="";
+
+ showToast();
+
+ showPage(
+   "home",
+   document.querySelectorAll(".navItem")[0]
+ );
+
+}
+
+function showPage(page,button){
+
+ document.querySelectorAll(".page")
+ .forEach(p=>p.classList.remove("active"));
+
+ document.getElementById(page)
+ .classList.add("active");
+
+ document.querySelectorAll(".navItem")
+ .forEach(n=>n.classList.remove("active"));
+
+ if(button) button.classList.add("active");
+
+ window.scrollTo(0,0);
+
+}
+
+function showToast(){
+
+ const toast=document.getElementById("toast");
+
+ toast.style.display="block";
+
+ setTimeout(()=>{
+   toast.style.display="none";
+ },1800);
+
+}
+
+function askOV(){
+
+ const question=
+ document.getElementById("aiQuestion")
+ .value.toLowerCase();
+
+ let income=0;
+ let expense=0;
+
+ transactions.forEach(t=>{
+   if(t.type==="income") income+=Number(t.amount);
+   else expense+=Number(t.amount);
+ });
+
+ let response;
+
+ if(question.includes("gasto")){
+   response=
+   `Tienes ${money(expense)} registrados en gastos.`;
+ }
+
+ else if(
+   question.includes("ingreso") ||
+   question.includes("venta")
+ ){
+   response=
+   `Tienes ${money(income)} registrados en ingresos.`;
+ }
+
+ else if(
+   question.includes("disponible") ||
+   question.includes("saldo") ||
+   question.includes("flujo")
+ ){
+   response=
+   `Tu flujo registrado actualmente es de ${money(income-expense)}.`;
+ }
+
+ else{
+   response=
+   `Actualmente tienes ${money(income)} en ingresos y ${money(expense)} en gastos, dejando un flujo de ${money(income-expense)}.`;
+ }
+
+ const box=document.getElementById("aiAnswer");
+
+ box.innerText=response;
+ box.style.display="block";
+
+}
+
+function formatDate(date){
+
+ if(!date) return "";
+
+ const parts=date.split("-");
+
+ if(parts.length!==3) return date;
+
+ return `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+}
+
+function escapeHTML(value){
+
+ const div=document.createElement("div");
+ div.textContent=value;
+ return div.innerHTML;
+
+}
+
+document.getElementById("date").value=
+new Date().toISOString().slice(0,10);
+
+saveData();
+calculate();
+
+</script>
 
 </body>
 </html>
