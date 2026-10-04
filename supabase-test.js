@@ -202,7 +202,11 @@ if (aiCompanyText) {
         company: activeCompany
       }
     );
-
+if (
+  typeof loadTransactionsFromSupabase === "function"
+) {
+  await loadTransactionsFromSupabase();
+}
 
     /*
       8. Mensaje visible
