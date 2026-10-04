@@ -1069,7 +1069,9 @@ function createClient() {
   };
 
   getClients().push(client);
-
+saveClientToSupabase(
+  client
+);
   saveData();
 
   renderClientList();
