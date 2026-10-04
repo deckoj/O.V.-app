@@ -84,6 +84,7 @@ function getTransactions() {
 ================================ */
 
 function money(number, currency = getCurrency()) {
+
   const value = Number(number) || 0;
 
   const formatted =
@@ -102,17 +103,42 @@ function money(number, currency = getCurrency()) {
 
 
 /* ==============================
-   CAMPO MONTO CON COMAS
+   CAMPO MONTO
 ================================ */
 
-function formatAmountInput(value) {
+function cleanAmount(value) {
 
   if (!value) return "";
 
+  return String(value)
+    .replace(/MXN/gi, "")
+    .replace(/\$/g, "")
+    .replace(/,/g, "")
+    .replace(/\s/g, "")
+    .replace(/[^\d.]/g, "");
+}
+
+
+function getAmountValue() {
+
+  const input =
+    document.getElementById("amount");
+
+  if (!input) return 0;
+
+  const clean =
+    cleanAmount(input.value);
+
+  return Number(clean) || 0;
+}
+
+
+function formatAmountInput(value) {
+
   let clean =
-    String(value)
-      .replace(/,/g, "")
-      .replace(/[^\d.]/g, "");
+    cleanAmount(value);
+
+  if (!clean) return "";
 
   const firstDot =
     clean.indexOf(".");
@@ -124,7 +150,6 @@ function formatAmountInput(value) {
       clean
         .substring(firstDot + 1)
         .replace(/\./g, "");
-
   }
 
   let [integerPart, decimalPart] =
@@ -138,33 +163,23 @@ function formatAmountInput(value) {
   }
 
   const formattedInteger =
-    Number(integerPart).toLocaleString("en-US");
+    Number(integerPart)
+      .toLocaleString("en-US");
 
   if (clean.includes(".")) {
 
     decimalPart =
-      (decimalPart || "").slice(0, 2);
+      (decimalPart || "")
+        .slice(0, 2);
 
-    return `${formattedInteger}.${decimalPart}`;
+    return (
+      formattedInteger +
+      "." +
+      decimalPart
+    );
   }
 
   return formattedInteger;
-}
-
-
-function getAmountValue() {
-
-  const input =
-    document.getElementById("amount");
-
-  if (!input) return 0;
-
-  const clean =
-    input.value
-      .replace(/,/g, "")
-      .replace(/[^\d.]/g, "");
-
-  return Number(clean) || 0;
 }
 
 
@@ -175,26 +190,123 @@ function setupAmountInput() {
 
   if (!input) return;
 
-  /* Cambiamos el campo a texto para permitir comas */
+  /*
+    Necesitamos texto para poder mostrar:
+    1,000
+    y después:
+    $1,000.00 MXN
+  */
+
   input.type = "text";
   input.inputMode = "decimal";
   input.autocomplete = "off";
 
-  input.addEventListener("input", () => {
 
-    const cursorWasAtEnd =
-      input.selectionStart === input.value.length;
+  /*
+    MIENTRAS ESCRIBES
 
-    input.value =
-      formatAmountInput(input.value);
+    1000
+    se convierte inmediatamente en
+    1,000
+  */
 
-    if (cursorWasAtEnd) {
-      const end = input.value.length;
-      input.setSelectionRange(end, end);
+  input.addEventListener(
+    "input",
+    function () {
+
+      const formatted =
+        formatAmountInput(input.value);
+
+      input.value = formatted;
+
+      const end =
+        input.value.length;
+
+      try {
+        input.setSelectionRange(end, end);
+      } catch (error) {
+        // Algunos navegadores móviles pueden ignorarlo.
+      }
     }
+  );
 
-  });
 
+  /*
+    CUANDO SALES DEL CAMPO
+
+    1,000
+    se convierte en
+    $1,000.00 MXN
+  */
+
+  input.addEventListener(
+    "blur",
+    function () {
+
+      const value =
+        getAmountValue();
+
+      if (!value) {
+        input.value = "";
+        return;
+      }
+
+      input.value =
+        money(value);
+    }
+  );
+
+
+  /*
+    CUANDO REGRESAS A EDITAR
+
+    $1,000.00 MXN
+    vuelve a
+    1,000
+
+    Si hay centavos reales:
+    $1,000.50 MXN
+    vuelve a
+    1,000.50
+  */
+
+  input.addEventListener(
+    "focus",
+    function () {
+
+      const value =
+        getAmountValue();
+
+      if (!value) {
+        input.value = "";
+        return;
+      }
+
+      let editable =
+        value.toFixed(2);
+
+      if (editable.endsWith(".00")) {
+        editable =
+          editable.slice(0, -3);
+      }
+
+      input.value =
+        formatAmountInput(editable);
+
+      setTimeout(() => {
+
+        const end =
+          input.value.length;
+
+        try {
+          input.setSelectionRange(end, end);
+        } catch (error) {
+          // Sin acción necesaria.
+        }
+
+      }, 0);
+    }
+  );
 }
 
 
@@ -218,7 +330,6 @@ function saveData() {
     "ov_company_transactions",
     JSON.stringify(companyTransactions)
   );
-
 }
 
 
@@ -240,17 +351,18 @@ function renderCompanySelector() {
     const option =
       document.createElement("option");
 
-    option.value = company.id;
-    option.textContent = company.name;
+    option.value =
+      company.id;
+
+    option.textContent =
+      company.name;
 
     if (company.id === activeCompanyId) {
       option.selected = true;
     }
 
     select.appendChild(option);
-
   });
-
 }
 
 
@@ -274,11 +386,14 @@ function changeCompany() {
 function createCompany() {
 
   const name =
-    prompt("¿Cómo se llama la nueva empresa?");
+    prompt(
+      "¿Cómo se llama la nueva empresa?"
+    );
 
   if (!name) return;
 
-  const cleanName = name.trim();
+  const cleanName =
+    name.trim();
 
   if (!cleanName) return;
 
@@ -290,7 +405,11 @@ function createCompany() {
     );
 
   if (alreadyExists) {
-    alert("Ya existe una empresa con ese nombre.");
+
+    alert(
+      "Ya existe una empresa con ese nombre."
+    );
+
     return;
   }
 
@@ -304,6 +423,7 @@ function createCompany() {
   });
 
   companyTransactions[id] = [];
+
   activeCompanyId = id;
 
   saveData();
@@ -322,12 +442,18 @@ function createCompany() {
 function deleteCompany(id) {
 
   if (companies.length === 1) {
-    alert("OV debe tener al menos una empresa.");
+
+    alert(
+      "OV debe tener al menos una empresa."
+    );
+
     return;
   }
 
   const company =
-    companies.find(c => c.id === id);
+    companies.find(
+      company => company.id === id
+    );
 
   if (!company) return;
 
@@ -340,12 +466,15 @@ function deleteCompany(id) {
   if (!confirmed) return;
 
   companies =
-    companies.filter(c => c.id !== id);
+    companies.filter(
+      company => company.id !== id
+    );
 
   delete companyTransactions[id];
 
   if (activeCompanyId === id) {
-    activeCompanyId = companies[0].id;
+    activeCompanyId =
+      companies[0].id;
   }
 
   saveData();
@@ -364,7 +493,9 @@ function deleteCompany(id) {
 function renderCompanyList() {
 
   const container =
-    document.getElementById("companyList");
+    document.getElementById(
+      "companyList"
+    );
 
   if (!container) return;
 
@@ -378,7 +509,9 @@ function renderCompanyList() {
     const row =
       document.createElement("div");
 
-    row.className = "companyRow";
+    row.className =
+      "companyRow";
+
 
     const left =
       document.createElement("div");
@@ -386,7 +519,8 @@ function renderCompanyList() {
     const strong =
       document.createElement("strong");
 
-    strong.textContent = company.name;
+    strong.textContent =
+      company.name;
 
     const br =
       document.createElement("br");
@@ -403,15 +537,20 @@ function renderCompanyList() {
     left.appendChild(br);
     left.appendChild(small);
 
+
     const right =
       document.createElement("div");
 
-    if (company.id === activeCompanyId) {
+    if (
+      company.id ===
+      activeCompanyId
+    ) {
 
       const current =
         document.createElement("small");
 
-      current.textContent = "Actual";
+      current.textContent =
+        "Actual";
 
       right.appendChild(current);
 
@@ -420,11 +559,15 @@ function renderCompanyList() {
       const button =
         document.createElement("button");
 
-      button.className = "deleteButton";
-      button.textContent = "Eliminar";
+      button.className =
+        "deleteButton";
+
+      button.textContent =
+        "Eliminar";
 
       button.onclick =
-        () => deleteCompany(company.id);
+        () =>
+          deleteCompany(company.id);
 
       right.appendChild(button);
     }
@@ -438,7 +581,7 @@ function renderCompanyList() {
 
 
 /* ==============================
-   INTERFAZ DE EMPRESA
+   INTERFAZ EMPRESA
 ================================ */
 
 function updateCompanyUI() {
@@ -448,7 +591,10 @@ function updateCompanyUI() {
 
   if (!company) return;
 
-  setText("companyTitle", company.name);
+  setText(
+    "companyTitle",
+    company.name
+  );
 
   setText(
     "movementCompanyText",
@@ -486,23 +632,51 @@ function calculate() {
   let income = 0;
   let expense = 0;
 
-  transactions.forEach(transaction => {
+  transactions.forEach(
+    transaction => {
 
-    if (transaction.type === "income") {
-      income += Number(transaction.amount);
-    } else {
-      expense += Number(transaction.amount);
+      if (
+        transaction.type ===
+        "income"
+      ) {
+
+        income +=
+          Number(
+            transaction.amount
+          );
+
+      } else {
+
+        expense +=
+          Number(
+            transaction.amount
+          );
+      }
     }
-
-  });
+  );
 
   const balance =
     income - expense;
 
-  setText("income", money(income));
-  setText("expense", money(expense));
-  setText("balance", money(balance));
-  setText("result", money(balance));
+  setText(
+    "income",
+    money(income)
+  );
+
+  setText(
+    "expense",
+    money(expense)
+  );
+
+  setText(
+    "balance",
+    money(balance)
+  );
+
+  setText(
+    "result",
+    money(balance)
+  );
 
   renderTransactions();
 }
@@ -518,15 +692,21 @@ function renderTransactions() {
     getTransactions();
 
   const sorted =
-    [...transactions].sort(
-      (a, b) => b.id - a.id
-    );
+    [...transactions]
+      .sort(
+        (a, b) =>
+          b.id - a.id
+      );
 
   const recent =
-    document.getElementById("recentTransactions");
+    document.getElementById(
+      "recentTransactions"
+    );
 
   const all =
-    document.getElementById("allTransactions");
+    document.getElementById(
+      "allTransactions"
+    );
 
   if (!recent || !all) return;
 
@@ -540,53 +720,73 @@ function renderTransactions() {
       'Aún no hay movimientos en esta empresa.' +
       '</div>';
 
-    recent.innerHTML = empty;
-    all.innerHTML = empty;
+    recent.innerHTML =
+      empty;
+
+    all.innerHTML =
+      empty;
 
     return;
   }
 
-  sorted.forEach((transaction, index) => {
+  sorted.forEach(
+    (transaction, index) => {
 
-    const sign =
-      transaction.type === "income"
-        ? "+"
-        : "-";
+      const sign =
+        transaction.type ===
+        "income"
+          ? "+"
+          : "-";
 
-    const amountClass =
-      transaction.type === "income"
-        ? "amountIncome"
-        : "amountExpense";
+      const amountClass =
+        transaction.type ===
+        "income"
+          ? "amountIncome"
+          : "amountExpense";
 
-    const html = `
-      <div class="transaction">
+      const html = `
+        <div class="transaction">
 
-        <div>
-          <strong>
-            ${escapeHTML(transaction.concept)}
-          </strong>
-          <br>
+          <div>
 
-          <small>
-            ${escapeHTML(transaction.category)}
-            ·
-            ${formatDate(transaction.date)}
-          </small>
+            <strong>
+              ${escapeHTML(
+                transaction.concept
+              )}
+            </strong>
+
+            <br>
+
+            <small>
+              ${escapeHTML(
+                transaction.category
+              )}
+              ·
+              ${formatDate(
+                transaction.date
+              )}
+            </small>
+
+          </div>
+
+          <div class="${amountClass}">
+            ${sign}${money(
+              transaction.amount
+            )}
+          </div>
+
         </div>
+      `;
 
-        <div class="${amountClass}">
-          ${sign}${money(transaction.amount)}
-        </div>
+      all.innerHTML +=
+        html;
 
-      </div>
-    `;
-
-    all.innerHTML += html;
-
-    if (index < 3) {
-      recent.innerHTML += html;
+      if (index < 3) {
+        recent.innerHTML +=
+          html;
+      }
     }
-  });
+  );
 }
 
 
@@ -596,15 +796,21 @@ function renderTransactions() {
 
 function setType(type) {
 
-  transactionType = type;
+  transactionType =
+    type;
 
   const incomeButton =
-    document.getElementById("incomeBtn");
+    document.getElementById(
+      "incomeBtn"
+    );
 
   const expenseButton =
-    document.getElementById("expenseBtn");
+    document.getElementById(
+      "expenseBtn"
+    );
 
   if (incomeButton) {
+
     incomeButton.classList.toggle(
       "active",
       type === "income"
@@ -612,6 +818,7 @@ function setType(type) {
   }
 
   if (expenseButton) {
+
     expenseButton.classList.toggle(
       "active",
       type === "expense"
@@ -630,28 +837,45 @@ function saveTransaction() {
     getAmountValue();
 
   const concept =
-    document.getElementById("concept")
-      .value.trim();
+    document
+      .getElementById("concept")
+      .value
+      .trim();
 
   const category =
-    document.getElementById("category").value;
+    document
+      .getElementById("category")
+      .value;
 
   const date =
-    document.getElementById("date").value;
+    document
+      .getElementById("date")
+      .value;
 
   const notes =
-    document.getElementById("notes")
-      .value.trim();
+    document
+      .getElementById("notes")
+      .value
+      .trim();
 
-  if (!amount || amount <= 0) {
+  if (
+    !amount ||
+    amount <= 0
+  ) {
 
-    alert("Ingresa un monto válido.");
+    alert(
+      "Ingresa un monto válido."
+    );
+
     return;
   }
 
   if (!concept) {
 
-    alert("Escribe el concepto del movimiento.");
+    alert(
+      "Escribe el concepto del movimiento."
+    );
+
     return;
   }
 
@@ -662,23 +886,32 @@ function saveTransaction() {
 
     id: Date.now(),
 
-    type: transactionType,
+    type:
+      transactionType,
 
     amount,
 
-    currency: getCurrency(),
+    currency:
+      getCurrency(),
 
     concept,
 
     category,
 
+    /*
+      Estos campos preparan OV
+      para Finance.
+    */
+
     client: "",
 
     project: "",
 
-    source: "manual",
+    source:
+      "manual",
 
-    classificationStatus: "manual",
+    classificationStatus:
+      "manual",
 
     date:
       date ||
@@ -689,22 +922,36 @@ function saveTransaction() {
     notes
   });
 
-  companyTransactions[activeCompanyId] =
-    transactions;
+  companyTransactions[
+    activeCompanyId
+  ] = transactions;
 
   saveData();
   calculate();
   renderCompanyList();
 
-  document.getElementById("amount").value = "";
-  document.getElementById("concept").value = "";
-  document.getElementById("notes").value = "";
+  document
+    .getElementById("amount")
+    .value = "";
 
-  showToast("Movimiento guardado");
+  document
+    .getElementById("concept")
+    .value = "";
+
+  document
+    .getElementById("notes")
+    .value = "";
+
+  showToast(
+    "Movimiento guardado"
+  );
 
   showPage(
     "home",
-    document.querySelectorAll(".navItem")[0]
+    document
+      .querySelectorAll(
+        ".navItem"
+      )[0]
   );
 }
 
@@ -713,34 +960,56 @@ function saveTransaction() {
    NAVEGACIÓN
 ================================ */
 
-function showPage(page, button) {
+function showPage(
+  page,
+  button
+) {
 
-  document.querySelectorAll(".page")
-    .forEach(element =>
-      element.classList.remove("active")
+  document
+    .querySelectorAll(".page")
+    .forEach(
+      element =>
+        element
+          .classList
+          .remove("active")
     );
 
   const selectedPage =
-    document.getElementById(page);
+    document
+      .getElementById(page);
 
   if (selectedPage) {
-    selectedPage.classList.add("active");
+
+    selectedPage
+      .classList
+      .add("active");
   }
 
-  document.querySelectorAll(".navItem")
-    .forEach(element =>
-      element.classList.remove("active")
+  document
+    .querySelectorAll(
+      ".navItem"
+    )
+    .forEach(
+      element =>
+        element
+          .classList
+          .remove("active")
     );
 
   if (button) {
-    button.classList.add("active");
+    button
+      .classList
+      .add("active");
   }
 
   if (page === "more") {
     renderCompanyList();
   }
 
-  window.scrollTo(0, 0);
+  window.scrollTo(
+    0,
+    0
+  );
 }
 
 
@@ -751,18 +1020,29 @@ function showPage(page, button) {
 function showToast(message) {
 
   const toast =
-    document.getElementById("toast");
+    document
+      .getElementById(
+        "toast"
+      );
 
   if (!toast) return;
 
   toast.textContent =
-    message || "Guardado";
+    message ||
+    "Guardado";
 
-  toast.style.display = "block";
+  toast.style.display =
+    "block";
 
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 1800);
+  setTimeout(
+    () => {
+
+      toast.style.display =
+        "none";
+
+    },
+    1800
+  );
 }
 
 
@@ -773,12 +1053,16 @@ function showToast(message) {
 function askOV() {
 
   const input =
-    document.getElementById("aiQuestion");
+    document
+      .getElementById(
+        "aiQuestion"
+      );
 
   if (!input) return;
 
   const question =
-    input.value.toLowerCase();
+    input.value
+      .toLowerCase();
 
   const transactions =
     getTransactions();
@@ -786,67 +1070,103 @@ function askOV() {
   let income = 0;
   let expense = 0;
 
-  transactions.forEach(transaction => {
+  transactions.forEach(
+    transaction => {
 
-    if (transaction.type === "income") {
-      income += Number(transaction.amount);
-    } else {
-      expense += Number(transaction.amount);
+      if (
+        transaction.type ===
+        "income"
+      ) {
+
+        income +=
+          Number(
+            transaction.amount
+          );
+
+      } else {
+
+        expense +=
+          Number(
+            transaction.amount
+          );
+      }
     }
-
-  });
+  );
 
   const company =
     getActiveCompany();
 
   let response;
 
-  if (question.includes("gasto")) {
-
-    response =
-      `${company.name} tiene ` +
-      `${money(expense)} registrados en gastos.`;
-
-  }
-
-  else if (
-    question.includes("ingreso") ||
-    question.includes("venta")
+  if (
+    question.includes(
+      "gasto"
+    )
   ) {
 
     response =
       `${company.name} tiene ` +
-      `${money(income)} registrados en ingresos.`;
+      `${money(expense)} ` +
+      `registrados en gastos.`;
 
-  }
-
-  else if (
-    question.includes("disponible") ||
-    question.includes("saldo") ||
-    question.includes("flujo")
+  } else if (
+    question.includes(
+      "ingreso"
+    ) ||
+    question.includes(
+      "venta"
+    )
   ) {
 
     response =
-      `El flujo registrado de ${company.name} ` +
-      `es de ${money(income - expense)}.`;
+      `${company.name} tiene ` +
+      `${money(income)} ` +
+      `registrados en ingresos.`;
 
-  }
-
-  else {
+  } else if (
+    question.includes(
+      "disponible"
+    ) ||
+    question.includes(
+      "saldo"
+    ) ||
+    question.includes(
+      "flujo"
+    )
+  ) {
 
     response =
-      `${company.name} tiene ${money(income)} ` +
-      `en ingresos y ${money(expense)} en gastos, ` +
-      `dejando un flujo de ${money(income - expense)}.`;
+      `El flujo registrado de ` +
+      `${company.name} es de ` +
+      `${money(
+        income - expense
+      )}.`;
+
+  } else {
+
+    response =
+      `${company.name} tiene ` +
+      `${money(income)} en ingresos ` +
+      `y ${money(expense)} en gastos, ` +
+      `dejando un flujo de ` +
+      `${money(
+        income - expense
+      )}.`;
   }
 
   const box =
-    document.getElementById("aiAnswer");
+    document
+      .getElementById(
+        "aiAnswer"
+      );
 
   if (!box) return;
 
-  box.innerText = response;
-  box.style.display = "block";
+  box.innerText =
+    response;
+
+  box.style.display =
+    "block";
 }
 
 
@@ -861,11 +1181,17 @@ function formatDate(date) {
   const parts =
     date.split("-");
 
-  if (parts.length !== 3) {
+  if (
+    parts.length !== 3
+  ) {
     return date;
   }
 
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return (
+    `${parts[2]}/` +
+    `${parts[1]}/` +
+    `${parts[0]}`
+  );
 }
 
 
@@ -876,7 +1202,8 @@ function formatDate(date) {
 function escapeHTML(value) {
 
   const div =
-    document.createElement("div");
+    document
+      .createElement("div");
 
   div.textContent =
     value ?? "";
@@ -885,13 +1212,19 @@ function escapeHTML(value) {
 }
 
 
-function setText(id, value) {
+function setText(
+  id,
+  value
+) {
 
   const element =
-    document.getElementById(id);
+    document
+      .getElementById(id);
 
   if (element) {
-    element.innerText = value;
+
+    element.innerText =
+      value;
   }
 }
 
@@ -903,7 +1236,10 @@ function setText(id, value) {
 function initializeOV() {
 
   const dateInput =
-    document.getElementById("date");
+    document
+      .getElementById(
+        "date"
+      );
 
   if (dateInput) {
 
@@ -916,8 +1252,11 @@ function initializeOV() {
   setupAmountInput();
 
   saveData();
+
   renderCompanySelector();
+
   updateCompanyUI();
+
   calculate();
 }
 
