@@ -277,7 +277,128 @@ async function loadClientsFromSupabase() {
     return false;
   }
 }
+async function loadProjectsFromSupabase() {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible para cargar proyectos."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await ovSupabase
+        .from("projects")
+        .select(`
+          id,
+          name,
+          client_id,
+          created_at
+        `)
+        .eq(
+          "company_id",
+          companyId
+        )
+        .order(
+          "created_at",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const remoteProjects =
+      (data || []).map(
+        project => {
+
+          const localClient =
+            getClients().find(
+              client =>
+                client.supabaseId ===
+                  project.client_id ||
+                client.id ===
+                  project.client_id
+            );
+
+
+          return {
+
+            id:
+              project.id,
+
+            supabaseId:
+              project.id,
+
+            clientId:
+              localClient
+                ? localClient.id
+                : "",
+
+            name:
+              project.name,
+
+            createdAt:
+              project.created_at
+                ? new Date(
+                    project.created_at
+                  ).getTime()
+                : Date.now()
+          };
+        }
+      );
+
+
+    companyProjects[
+      activeCompanyId
+    ] =
+      remoteProjects;
+
+
+    saveData();
+
+    renderClientList();
+    renderProjectSelector();
+
+
+    console.info(
+      "OV Supabase: proyectos cargados.",
+      remoteProjects.length
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al cargar proyectos:",
+      error
+    );
+
+    return false;
+  }
+}
 async function loadTransactionsFromSupabase() {
 
   if (
