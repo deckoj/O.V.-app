@@ -81,7 +81,7 @@ select,input,textarea{
 
 .company select{
   width:auto;
-  max-width:48%;
+  max-width:52%;
   font-weight:600;
 }
 
@@ -147,9 +147,7 @@ select,input,textarea{
   margin-bottom:9px;
 }
 
-.transaction small{
-  color:var(--muted);
-}
+.transaction small{color:var(--muted)}
 
 .amountIncome{
   color:var(--green);
@@ -219,6 +217,28 @@ label{
   font-weight:750;
 }
 
+.secondary{
+  width:100%;
+  border:1px solid #dfe3e7;
+  background:white;
+  color:#17212b;
+  padding:14px;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:700;
+}
+
+.danger{
+  width:100%;
+  border:1px solid #f0cbc6;
+  background:#fff;
+  color:var(--red);
+  padding:14px;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:700;
+}
+
 .aiCard{
   background:var(--dark);
   color:white;
@@ -227,10 +247,7 @@ label{
 }
 
 .aiCard p{color:#aeb7c2}
-
-.aiCard input{
-  margin-top:10px;
-}
+.aiCard input{margin-top:10px}
 
 .aiAnswer{
   margin-top:16px;
@@ -238,6 +255,30 @@ label{
   background:#202a35;
   border-radius:13px;
   display:none;
+}
+
+.companyRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  background:white;
+  padding:17px;
+  border-radius:15px;
+  margin-bottom:10px;
+}
+
+.companyRow small{
+  color:var(--muted);
+}
+
+.deleteButton{
+  border:0;
+  background:#fff1ef;
+  color:var(--red);
+  padding:9px 11px;
+  border-radius:10px;
+  font-weight:700;
 }
 
 nav{
@@ -306,12 +347,10 @@ nav{
   <div class="company">
     <div>
       <small>Empresa</small>
-      <h2>Grupo Decko</h2>
+      <h2 id="companyTitle">Grupo Decko</h2>
     </div>
 
-    <select>
-      <option>Grupo Decko</option>
-    </select>
+    <select id="companySelect" onchange="changeCompany()"></select>
   </div>
 
   <div class="balance">
@@ -349,7 +388,7 @@ nav{
 <section id="movements" class="page">
 
   <h1>Movimientos</h1>
-  <p style="color:#89939f">Historial de ingresos y gastos.</p>
+  <p id="movementCompanyText" style="color:#89939f"></p>
 
   <div id="allTransactions"></div>
 
@@ -359,9 +398,8 @@ nav{
 <section id="add" class="page">
 
   <h1>Agregar movimiento</h1>
-  <p style="color:#89939f">
-    Registra un ingreso o gasto de Grupo Decko.
-  </p>
+
+  <p id="addCompanyText" style="color:#89939f"></p>
 
   <div class="formCard">
 
@@ -396,6 +434,9 @@ nav{
         <option>Transporte</option>
         <option>Impuestos</option>
         <option>Servicios</option>
+        <option>Renta</option>
+        <option>Marketing</option>
+        <option>Equipos</option>
         <option>Otros</option>
       </select>
     </div>
@@ -426,11 +467,10 @@ nav{
   <h1>OV IA</h1>
 
   <div class="aiCard">
+
     <h2>Tu analista financiero</h2>
 
-    <p>
-      Consulta la información registrada en OV.
-    </p>
+    <p id="aiCompanyText"></p>
 
     <input id="aiQuestion"
     placeholder="Ej. ¿Cuánto he gastado?">
@@ -454,14 +494,22 @@ nav{
   <h1>Más</h1>
 
   <div class="card">
-    <strong>Empresa</strong>
-    <p>Grupo Decko</p>
+    <strong>Empresa actual</strong>
+    <p id="moreCompanyName"></p>
   </div>
 
-  <div class="card" style="margin-top:12px">
+  <h3 class="sectionTitle">Empresas</h3>
+
+  <div id="companyList"></div>
+
+  <button class="primary" onclick="createCompany()">
+    ＋ Crear nueva empresa
+  </button>
+
+  <div class="card" style="margin-top:20px">
     <strong>OV</strong>
     <p style="color:#89939f">
-      Versión MVP 0.2
+      Versión MVP 0.3
     </p>
   </div>
 
@@ -499,294 +547,688 @@ Más
 
 </nav>
 
-<div id="toast" class="toast">
-Movimiento guardado
-</div>
+<div id="toast" class="toast"></div>
 
 
 <script>
 
 let transactionType="income";
 
-let transactions=
-JSON.parse(localStorage.getItem("ov_transactions")) || [
-{
- id:1,
- type:"income",
- amount:85000,
- concept:"Altozano",
- category:"Mantenimiento",
- date:new Date().toISOString().slice(0,10)
-},
-{
- id:2,
- type:"expense",
- amount:42500,
- concept:"Nómina",
- category:"Nómina",
- date:new Date().toISOString().slice(0,10)
-},
-{
- id:3,
- type:"expense",
- amount:18750,
- concept:"Materiales",
- category:"Materiales",
- date:new Date().toISOString().slice(0,10)
-}
+/* ---------- EMPRESAS ---------- */
+
+let companies=
+JSON.parse(localStorage.getItem("ov_companies")) || [
+  {
+    id:"grupo-decko",
+    name:"Grupo Decko"
+  }
 ];
 
+let activeCompanyId=
+localStorage.getItem("ov_active_company") ||
+companies[0].id;
+
+
+/* ---------- MIGRACIÓN DE DATOS ANTERIORES ---------- */
+
+let oldTransactions=
+JSON.parse(localStorage.getItem("ov_transactions")) || [];
+
+let companyTransactions=
+JSON.parse(localStorage.getItem("ov_company_transactions"));
+
+if(!companyTransactions){
+
+  companyTransactions={};
+
+  companyTransactions["grupo-decko"]=oldTransactions;
+
+  localStorage.setItem(
+    "ov_company_transactions",
+    JSON.stringify(companyTransactions)
+  );
+
+}
+
+companies.forEach(company=>{
+
+  if(!companyTransactions[company.id]){
+    companyTransactions[company.id]=[];
+  }
+
+});
+
+
+/* ---------- UTILIDADES ---------- */
+
+function getActiveCompany(){
+
+  return companies.find(
+    c=>c.id===activeCompanyId
+  ) || companies[0];
+
+}
+
+function getTransactions(){
+
+  if(!companyTransactions[activeCompanyId]){
+    companyTransactions[activeCompanyId]=[];
+  }
+
+  return companyTransactions[activeCompanyId];
+
+}
+
 function money(number){
- return new Intl.NumberFormat(
-   "es-MX",
-   {
-     style:"currency",
-     currency:"MXN",
-     maximumFractionDigits:0
-   }
- ).format(number);
+
+  return new Intl.NumberFormat(
+    "es-MX",
+    {
+      style:"currency",
+      currency:"MXN",
+      maximumFractionDigits:0
+    }
+  ).format(number);
+
 }
 
 function saveData(){
- localStorage.setItem(
-   "ov_transactions",
-   JSON.stringify(transactions)
- );
+
+  localStorage.setItem(
+    "ov_companies",
+    JSON.stringify(companies)
+  );
+
+  localStorage.setItem(
+    "ov_active_company",
+    activeCompanyId
+  );
+
+  localStorage.setItem(
+    "ov_company_transactions",
+    JSON.stringify(companyTransactions)
+  );
+
 }
+
+
+/* ---------- SELECTOR EMPRESA ---------- */
+
+function renderCompanySelector(){
+
+  const select=
+  document.getElementById("companySelect");
+
+  select.innerHTML="";
+
+  companies.forEach(company=>{
+
+    const option=document.createElement("option");
+
+    option.value=company.id;
+    option.textContent=company.name;
+
+    if(company.id===activeCompanyId){
+      option.selected=true;
+    }
+
+    select.appendChild(option);
+
+  });
+
+}
+
+function changeCompany(){
+
+  activeCompanyId=
+  document.getElementById("companySelect").value;
+
+  saveData();
+  updateCompanyUI();
+  calculate();
+
+  showToast("Empresa cambiada");
+
+}
+
+
+/* ---------- CREAR EMPRESA ---------- */
+
+function createCompany(){
+
+  const name=prompt(
+    "¿Cómo se llama la nueva empresa?"
+  );
+
+  if(!name) return;
+
+  const cleanName=name.trim();
+
+  if(!cleanName) return;
+
+  const alreadyExists=
+  companies.some(
+    c=>c.name.toLowerCase()===cleanName.toLowerCase()
+  );
+
+  if(alreadyExists){
+    alert("Ya existe una empresa con ese nombre.");
+    return;
+  }
+
+  const id=
+  "company-"+Date.now();
+
+  companies.push({
+    id,
+    name:cleanName
+  });
+
+  companyTransactions[id]=[];
+
+  activeCompanyId=id;
+
+  saveData();
+  renderCompanySelector();
+  updateCompanyUI();
+  renderCompanyList();
+  calculate();
+
+  showToast("Empresa creada");
+
+}
+
+
+/* ---------- ELIMINAR EMPRESA ---------- */
+
+function deleteCompany(id){
+
+  if(companies.length===1){
+    alert("OV debe tener al menos una empresa.");
+    return;
+  }
+
+  const company=
+  companies.find(c=>c.id===id);
+
+  if(!company) return;
+
+  const confirmed=confirm(
+    `¿Eliminar "${company.name}"?\n\nTambién se eliminarán sus movimientos guardados en este dispositivo.`
+  );
+
+  if(!confirmed) return;
+
+  companies=
+  companies.filter(c=>c.id!==id);
+
+  delete companyTransactions[id];
+
+  if(activeCompanyId===id){
+    activeCompanyId=companies[0].id;
+  }
+
+  saveData();
+  renderCompanySelector();
+  updateCompanyUI();
+  renderCompanyList();
+  calculate();
+
+  showToast("Empresa eliminada");
+
+}
+
+
+/* ---------- LISTA DE EMPRESAS ---------- */
+
+function renderCompanyList(){
+
+  const container=
+  document.getElementById("companyList");
+
+  container.innerHTML="";
+
+  companies.forEach(company=>{
+
+    const transactions=
+    companyTransactions[company.id] || [];
+
+    const row=document.createElement("div");
+    row.className="companyRow";
+
+    const left=document.createElement("div");
+
+    const strong=document.createElement("strong");
+    strong.textContent=company.name;
+
+    const br=document.createElement("br");
+
+    const small=document.createElement("small");
+    small.textContent=
+    `${transactions.length} movimiento${transactions.length===1 ? "" : "s"}`;
+
+    left.appendChild(strong);
+    left.appendChild(br);
+    left.appendChild(small);
+
+    const right=document.createElement("div");
+
+    if(company.id===activeCompanyId){
+
+      const current=document.createElement("small");
+      current.textContent="Actual";
+      right.appendChild(current);
+
+    }else{
+
+      const button=document.createElement("button");
+      button.className="deleteButton";
+      button.textContent="Eliminar";
+      button.onclick=()=>deleteCompany(company.id);
+
+      right.appendChild(button);
+
+    }
+
+    row.appendChild(left);
+    row.appendChild(right);
+
+    container.appendChild(row);
+
+  });
+
+}
+
+
+/* ---------- UI EMPRESA ---------- */
+
+function updateCompanyUI(){
+
+  const company=getActiveCompany();
+
+  if(!company) return;
+
+  document.getElementById("companyTitle")
+  .textContent=company.name;
+
+  document.getElementById("movementCompanyText")
+  .textContent=`Historial de ${company.name}.`;
+
+  document.getElementById("addCompanyText")
+  .textContent=`Registrando movimiento en ${company.name}.`;
+
+  document.getElementById("aiCompanyText")
+  .textContent=`Analizando la información registrada de ${company.name}.`;
+
+  document.getElementById("moreCompanyName")
+  .textContent=company.name;
+
+  renderCompanyList();
+
+}
+
+
+/* ---------- CÁLCULOS ---------- */
 
 function calculate(){
 
- let income=0;
- let expense=0;
+  const transactions=getTransactions();
 
- transactions.forEach(t=>{
-   if(t.type==="income") income+=Number(t.amount);
-   else expense+=Number(t.amount);
- });
+  let income=0;
+  let expense=0;
 
- const balance=income-expense;
+  transactions.forEach(t=>{
 
- document.getElementById("income").innerText=money(income);
- document.getElementById("expense").innerText=money(expense);
- document.getElementById("balance").innerText=money(balance);
- document.getElementById("result").innerText=money(balance);
+    if(t.type==="income"){
+      income+=Number(t.amount);
+    }else{
+      expense+=Number(t.amount);
+    }
 
- renderTransactions();
+  });
+
+  const balance=income-expense;
+
+  document.getElementById("income")
+  .innerText=money(income);
+
+  document.getElementById("expense")
+  .innerText=money(expense);
+
+  document.getElementById("balance")
+  .innerText=money(balance);
+
+  document.getElementById("result")
+  .innerText=money(balance);
+
+  renderTransactions();
+
 }
+
+
+/* ---------- MOVIMIENTOS ---------- */
 
 function renderTransactions(){
 
- const sorted=[...transactions].sort(
-   (a,b)=>b.id-a.id
- );
+  const transactions=getTransactions();
 
- const recent=document.getElementById("recentTransactions");
- const all=document.getElementById("allTransactions");
+  const sorted=[...transactions].sort(
+    (a,b)=>b.id-a.id
+  );
 
- recent.innerHTML="";
- all.innerHTML="";
+  const recent=
+  document.getElementById("recentTransactions");
 
- if(sorted.length===0){
-   const empty='<div class="empty">Aún no hay movimientos.</div>';
-   recent.innerHTML=empty;
-   all.innerHTML=empty;
-   return;
- }
+  const all=
+  document.getElementById("allTransactions");
 
- sorted.forEach((t,index)=>{
+  recent.innerHTML="";
+  all.innerHTML="";
 
-   const sign=t.type==="income" ? "+" : "-";
-   const amountClass=
-   t.type==="income" ? "amountIncome" : "amountExpense";
+  if(sorted.length===0){
 
-   const html=`
-   <div class="transaction">
-     <div>
-       <strong>${escapeHTML(t.concept)}</strong><br>
-       <small>${escapeHTML(t.category)} · ${formatDate(t.date)}</small>
-     </div>
+    const empty=
+    '<div class="empty">Aún no hay movimientos en esta empresa.</div>';
 
-     <div class="${amountClass}">
-       ${sign}${money(t.amount)}
-     </div>
-   </div>`;
+    recent.innerHTML=empty;
+    all.innerHTML=empty;
 
-   all.innerHTML+=html;
+    return;
 
-   if(index<3) recent.innerHTML+=html;
+  }
 
- });
+  sorted.forEach((t,index)=>{
+
+    const sign=
+    t.type==="income" ? "+" : "-";
+
+    const amountClass=
+    t.type==="income"
+    ? "amountIncome"
+    : "amountExpense";
+
+    const html=`
+    <div class="transaction">
+
+      <div>
+        <strong>${escapeHTML(t.concept)}</strong><br>
+        <small>
+          ${escapeHTML(t.category)} · ${formatDate(t.date)}
+        </small>
+      </div>
+
+      <div class="${amountClass}">
+        ${sign}${money(t.amount)}
+      </div>
+
+    </div>`;
+
+    all.innerHTML+=html;
+
+    if(index<3){
+      recent.innerHTML+=html;
+    }
+
+  });
 
 }
+
+
+/* ---------- TIPO MOVIMIENTO ---------- */
 
 function setType(type){
 
- transactionType=type;
+  transactionType=type;
 
- document.getElementById("incomeBtn")
- .classList.toggle("active",type==="income");
+  document.getElementById("incomeBtn")
+  .classList.toggle(
+    "active",
+    type==="income"
+  );
 
- document.getElementById("expenseBtn")
- .classList.toggle("active",type==="expense");
+  document.getElementById("expenseBtn")
+  .classList.toggle(
+    "active",
+    type==="expense"
+  );
 
 }
+
+
+/* ---------- GUARDAR MOVIMIENTO ---------- */
 
 function saveTransaction(){
 
- const amount=
- Number(document.getElementById("amount").value);
+  const amount=
+  Number(
+    document.getElementById("amount").value
+  );
 
- const concept=
- document.getElementById("concept").value.trim();
+  const concept=
+  document.getElementById("concept")
+  .value.trim();
 
- const category=
- document.getElementById("category").value;
+  const category=
+  document.getElementById("category").value;
 
- const date=
- document.getElementById("date").value;
+  const date=
+  document.getElementById("date").value;
 
- const notes=
- document.getElementById("notes").value.trim();
+  const notes=
+  document.getElementById("notes")
+  .value.trim();
 
- if(!amount || amount<=0){
-   alert("Ingresa un monto válido.");
-   return;
- }
+  if(!amount || amount<=0){
 
- if(!concept){
-   alert("Escribe el concepto del movimiento.");
-   return;
- }
+    alert("Ingresa un monto válido.");
+    return;
 
- transactions.push({
-   id:Date.now(),
-   type:transactionType,
-   amount,
-   concept,
-   category,
-   date:date || new Date().toISOString().slice(0,10),
-   notes
- });
+  }
 
- saveData();
- calculate();
+  if(!concept){
 
- document.getElementById("amount").value="";
- document.getElementById("concept").value="";
- document.getElementById("notes").value="";
+    alert("Escribe el concepto del movimiento.");
+    return;
 
- showToast();
+  }
 
- showPage(
-   "home",
-   document.querySelectorAll(".navItem")[0]
- );
+  const transactions=getTransactions();
+
+  transactions.push({
+
+    id:Date.now(),
+    type:transactionType,
+    amount,
+    concept,
+    category,
+    date:
+      date ||
+      new Date().toISOString().slice(0,10),
+    notes
+
+  });
+
+  companyTransactions[activeCompanyId]=transactions;
+
+  saveData();
+  calculate();
+  renderCompanyList();
+
+  document.getElementById("amount").value="";
+  document.getElementById("concept").value="";
+  document.getElementById("notes").value="";
+
+  showToast("Movimiento guardado");
+
+  showPage(
+    "home",
+    document.querySelectorAll(".navItem")[0]
+  );
 
 }
+
+
+/* ---------- NAVEGACIÓN ---------- */
 
 function showPage(page,button){
 
- document.querySelectorAll(".page")
- .forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".page")
+  .forEach(
+    p=>p.classList.remove("active")
+  );
 
- document.getElementById(page)
- .classList.add("active");
+  document.getElementById(page)
+  .classList.add("active");
 
- document.querySelectorAll(".navItem")
- .forEach(n=>n.classList.remove("active"));
+  document.querySelectorAll(".navItem")
+  .forEach(
+    n=>n.classList.remove("active")
+  );
 
- if(button) button.classList.add("active");
+  if(button){
+    button.classList.add("active");
+  }
 
- window.scrollTo(0,0);
+  if(page==="more"){
+    renderCompanyList();
+  }
+
+  window.scrollTo(0,0);
+
+}
+
+
+/* ---------- AVISOS ---------- */
+
+function showToast(message){
+
+  const toast=
+  document.getElementById("toast");
+
+  toast.textContent=
+  message || "Guardado";
+
+  toast.style.display="block";
+
+  setTimeout(()=>{
+
+    toast.style.display="none";
+
+  },1800);
 
 }
 
-function showToast(){
 
- const toast=document.getElementById("toast");
-
- toast.style.display="block";
-
- setTimeout(()=>{
-   toast.style.display="none";
- },1800);
-
-}
+/* ---------- OV IA ---------- */
 
 function askOV(){
 
- const question=
- document.getElementById("aiQuestion")
- .value.toLowerCase();
+  const question=
+  document.getElementById("aiQuestion")
+  .value.toLowerCase();
 
- let income=0;
- let expense=0;
+  const transactions=getTransactions();
 
- transactions.forEach(t=>{
-   if(t.type==="income") income+=Number(t.amount);
-   else expense+=Number(t.amount);
- });
+  let income=0;
+  let expense=0;
 
- let response;
+  transactions.forEach(t=>{
 
- if(question.includes("gasto")){
-   response=
-   `Tienes ${money(expense)} registrados en gastos.`;
- }
+    if(t.type==="income"){
+      income+=Number(t.amount);
+    }else{
+      expense+=Number(t.amount);
+    }
 
- else if(
-   question.includes("ingreso") ||
-   question.includes("venta")
- ){
-   response=
-   `Tienes ${money(income)} registrados en ingresos.`;
- }
+  });
 
- else if(
-   question.includes("disponible") ||
-   question.includes("saldo") ||
-   question.includes("flujo")
- ){
-   response=
-   `Tu flujo registrado actualmente es de ${money(income-expense)}.`;
- }
+  const company=getActiveCompany();
 
- else{
-   response=
-   `Actualmente tienes ${money(income)} en ingresos y ${money(expense)} en gastos, dejando un flujo de ${money(income-expense)}.`;
- }
+  let response;
 
- const box=document.getElementById("aiAnswer");
+  if(question.includes("gasto")){
 
- box.innerText=response;
- box.style.display="block";
+    response=
+    `${company.name} tiene ${money(expense)} registrados en gastos.`;
+
+  }
+
+  else if(
+    question.includes("ingreso") ||
+    question.includes("venta")
+  ){
+
+    response=
+    `${company.name} tiene ${money(income)} registrados en ingresos.`;
+
+  }
+
+  else if(
+    question.includes("disponible") ||
+    question.includes("saldo") ||
+    question.includes("flujo")
+  ){
+
+    response=
+    `El flujo registrado de ${company.name} es de ${money(income-expense)}.`;
+
+  }
+
+  else{
+
+    response=
+    `${company.name} tiene ${money(income)} en ingresos y ${money(expense)} en gastos, dejando un flujo de ${money(income-expense)}.`;
+
+  }
+
+  const box=
+  document.getElementById("aiAnswer");
+
+  box.innerText=response;
+  box.style.display="block";
 
 }
+
+
+/* ---------- FECHA ---------- */
 
 function formatDate(date){
 
- if(!date) return "";
+  if(!date) return "";
 
- const parts=date.split("-");
+  const parts=date.split("-");
 
- if(parts.length!==3) return date;
+  if(parts.length!==3){
+    return date;
+  }
 
- return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
 
 }
+
+
+/* ---------- SEGURIDAD TEXTO ---------- */
 
 function escapeHTML(value){
 
- const div=document.createElement("div");
- div.textContent=value;
- return div.innerHTML;
+  const div=
+  document.createElement("div");
+
+  div.textContent=value;
+
+  return div.innerHTML;
 
 }
+
+
+/* ---------- INICIO ---------- */
 
 document.getElementById("date").value=
 new Date().toISOString().slice(0,10);
 
 saveData();
+renderCompanySelector();
+updateCompanyUI();
 calculate();
 
 </script>
