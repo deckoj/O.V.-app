@@ -1029,7 +1029,103 @@ function renderCompanyList() {
 /* =========================================
    CREAR CLIENTE
 ========================================= */
+async function saveClientToSupabase(
+  client
+) {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible para guardar cliente."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    const {
+      data: existingClients,
+      error: searchError
+    } =
+      await ovSupabase
+        .from("clients")
+        .select("id, name")
+        .eq(
+          "company_id",
+          companyId
+        )
+        .ilike(
+          "name",
+          client.name
+        )
+        .limit(1);
+
+
+    if (searchError) {
+      throw searchError;
+    }
+
+
+    if (
+      existingClients &&
+      existingClients.length > 0
+    ) {
+
+      console.info(
+        "OV Supabase: cliente ya existe.",
+        client.name
+      );
+
+      return true;
+    }
+
+
+    const {
+      error: insertError
+    } =
+      await ovSupabase
+        .from("clients")
+        .insert({
+          company_id:
+            companyId,
+
+          name:
+            client.name
+        });
+
+
+    if (insertError) {
+      throw insertError;
+    }
+
+
+    console.info(
+      "OV Supabase: cliente guardado.",
+      client.name
+    );
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al guardar cliente:",
+      error
+    );
+
+    return false;
+  }
+}
 function createClient() {
 
   const name =
