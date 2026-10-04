@@ -1090,3 +1090,153 @@ nav {
   }
 
 }
+/* =========================================
+   OV APP — LOGIN
+========================================= */
+
+.loginScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: #101720;
+}
+
+
+.loginCard {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 34px 28px;
+
+  background: #18222d;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.35);
+
+  text-align: center;
+}
+
+
+.loginLogo {
+  width: 64px;
+  height: 64px;
+
+  margin: 0 auto 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  color: #101720;
+
+  font-size: 24px;
+  font-weight: 800;
+}
+
+
+.loginCard h1 {
+  margin: 0 0 8px;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+
+.loginCard > p {
+  margin: 0 0 28px;
+
+  color: #89939f;
+
+  font-size: 14px;
+}
+
+
+.loginField {
+  text-align: left;
+
+  margin-bottom: 18px;
+}
+
+
+.loginField label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #d7dde4;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+.loginField input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 14px 15px;
+
+  border-radius: 12px;
+
+  border: 1px solid rgba(255,255,255,0.10);
+
+  background: #101720;
+
+  color: #ffffff;
+
+  font-size: 16px;
+
+  outline: none;
+}
+
+
+.loginField input:focus {
+  border-color: rgba(255,255,255,0.35);
+}
+
+
+.loginField input::placeholder {
+  color: #687482;
+}
+
+
+.loginButton {
+  width: 100%;
+
+  margin-top: 8px;
+
+  min-height: 50px;
+
+  font-size: 16px;
+}
+
+
+.loginMessage {
+  min-height: 20px;
+
+  margin-top: 16px;
+
+  color: #89939f;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+}
