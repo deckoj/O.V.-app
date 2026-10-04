@@ -261,3 +261,169 @@ function ovWatchAuth() {
 ========================================= */
 
 ovWatchAuth();
+/* =========================================
+   OV APP — INTERFAZ DE INICIO DE SESIÓN
+========================================= */
+
+async function handleOVLogin() {
+
+  const emailInput =
+    document.getElementById("loginEmail");
+
+  const passwordInput =
+    document.getElementById("loginPassword");
+
+  const message =
+    document.getElementById("loginMessage");
+
+
+  const email =
+    emailInput?.value || "";
+
+  const password =
+    passwordInput?.value || "";
+
+
+  if (message) {
+    message.textContent =
+      "Iniciando sesión...";
+  }
+
+
+  const result =
+    await ovLogin(
+      email,
+      password
+    );
+
+
+  if (!result.success) {
+
+    if (message) {
+      message.textContent =
+        result.message;
+    }
+
+    return;
+  }
+
+
+  if (message) {
+    message.textContent =
+      "Sesión iniciada correctamente.";
+  }
+
+
+  showOVApp();
+}
+
+
+/* =========================================
+   MOSTRAR OV APP
+========================================= */
+
+function showOVApp() {
+
+  const loginScreen =
+    document.getElementById(
+      "loginScreen"
+    );
+
+
+  if (loginScreen) {
+    loginScreen.style.display =
+      "none";
+  }
+}
+
+
+/* =========================================
+   MOSTRAR LOGIN
+========================================= */
+
+function showOVLogin() {
+
+  const loginScreen =
+    document.getElementById(
+      "loginScreen"
+    );
+
+
+  if (loginScreen) {
+    loginScreen.style.display =
+      "flex";
+  }
+}
+
+
+/* =========================================
+   REVISAR SESIÓN AL ABRIR OV
+========================================= */
+
+async function initializeOVAuth() {
+
+  const session =
+    await ovGetSession();
+
+
+  if (session) {
+
+    showOVApp();
+
+  } else {
+
+    showOVLogin();
+  }
+}
+
+
+/* =========================================
+   CAMBIOS DE AUTENTICACIÓN
+========================================= */
+
+window.addEventListener(
+  "ov-auth-change",
+  event => {
+
+    const session =
+      event.detail?.session;
+
+
+    if (session) {
+
+      showOVApp();
+
+    } else {
+
+      showOVLogin();
+    }
+  }
+);
+
+
+/* =========================================
+   ENTER PARA INICIAR SESIÓN
+========================================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      document.getElementById(
+        "loginScreen"
+      )?.style.display !== "none"
+    ) {
+
+      handleOVLogin();
+    }
+  }
+);
+
+
+/* =========================================
+   INICIAR AUTENTICACIÓN
+========================================= */
+
+initializeOVAuth();
