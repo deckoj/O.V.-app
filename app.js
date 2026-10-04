@@ -3592,4 +3592,4 @@ async function migrateOVLocalDataToSupabase() {
    NO ACTIVAR TODAVÍA
 ========================================= */
 
-// migrateOVLocalDataToSupabase();
+migrateOVLocalDataToSupabase();
