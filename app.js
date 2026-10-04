@@ -3037,7 +3037,9 @@ function deleteTransaction(id) {
 
     return;
   }
-
+deleteTransactionFromSupabase(
+  transaction
+);
 
   companyTransactions[
     activeCompanyId
