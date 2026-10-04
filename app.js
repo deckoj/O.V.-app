@@ -2607,7 +2607,7 @@ function saveTransaction() {
       MOVIMIENTO NUEVO
     */
 
-    transactions.push({
+  getTransactions().push({
 
       id:
         Date.now(),
