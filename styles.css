@@ -1,6 +1,6 @@
 /* =========================================
-   OV — STYLE.CSS
-   MVP 0.4
+   OV — STYLES.CSS
+   MVP 0.7
 ========================================= */
 
 * {
@@ -11,21 +11,16 @@
 :root {
   --dark: #111820;
   --dark-soft: #202a35;
-
   --bg: #f5f7f9;
   --card: #ffffff;
-
   --text: #17212b;
   --muted: #89939f;
-
   --green: #2f8f5b;
-  --green-light: #63d494;
-
+  --green-soft: #edf8f2;
   --red: #c44738;
-
+  --red-soft: #fff1ef;
   --border: #e7e9ec;
-
-  --radius: 18px;
+  --input-border: #dfe3e7;
 }
 
 
@@ -34,27 +29,25 @@
 ========================================= */
 
 html {
+  min-height: 100%;
   background: var(--bg);
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
 
   font-family:
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
     sans-serif;
 
   background: var(--bg);
   color: var(--text);
 
-  padding-bottom: 105px;
-
-  min-height: 100vh;
+  padding-bottom:
+    calc(100px + env(safe-area-inset-bottom));
 }
 
 button,
@@ -66,20 +59,6 @@ textarea {
 
 button {
   cursor: pointer;
-}
-
-h1 {
-  margin-top: 0;
-  font-size: 29px;
-  letter-spacing: -0.7px;
-}
-
-p {
-  line-height: 1.45;
-}
-
-.muted {
-  color: var(--muted);
 }
 
 .hidden {
@@ -96,7 +75,7 @@ header {
   color: white;
 
   padding:
-    calc(27px + env(safe-area-inset-top))
+    calc(30px + env(safe-area-inset-top))
     22px
     27px;
 }
@@ -108,7 +87,7 @@ header {
 }
 
 .subtitle {
-  margin-top: 5px;
+  margin-top: 6px;
   color: #9fa9b5;
   font-size: 14px;
 }
@@ -119,15 +98,9 @@ header {
 ========================================= */
 
 main {
-  width: 100%;
   max-width: 850px;
-
   margin: auto;
-
-  padding:
-    24px
-    18px
-    35px;
+  padding: 24px 18px;
 }
 
 .page {
@@ -136,6 +109,10 @@ main {
 
 .page.active {
   display: block;
+}
+
+.page > h1 {
+  margin-top: 0;
 }
 
 
@@ -149,7 +126,6 @@ main {
   justify-content: space-between;
 
   gap: 15px;
-
   margin-bottom: 24px;
 }
 
@@ -160,7 +136,6 @@ main {
 .company h2 {
   margin: 3px 0 0;
   font-size: 25px;
-  letter-spacing: -0.4px;
 }
 
 .company select {
@@ -179,10 +154,9 @@ input,
 textarea {
   width: 100%;
 
-  border: 1px solid #dfe3e7;
+  border: 1px solid var(--input-border);
 
   background: white;
-
   color: var(--text);
 
   padding: 14px;
@@ -201,7 +175,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: #aab2bb;
+  border-color: #aeb7c2;
 
   box-shadow:
     0 0 0 3px
@@ -210,16 +184,16 @@ textarea:focus {
 
 textarea {
   resize: vertical;
+  min-height: 90px;
 }
 
 
 /* =========================================
-   SALDO
+   BALANCE
 ========================================= */
 
 .balance {
   background: var(--dark);
-
   color: white;
 
   padding: 27px;
@@ -227,7 +201,7 @@ textarea {
   border-radius: 23px;
 
   box-shadow:
-    0 8px 22px
+    0 10px 30px
     rgba(17, 24, 32, 0.08);
 }
 
@@ -238,20 +212,16 @@ textarea {
 
 .balance h1 {
   margin: 10px 0 6px;
-
-  font-size: 38px;
-
-  letter-spacing: -1.2px;
+  font-size: 39px;
+  line-height: 1.08;
 
   overflow-wrap: anywhere;
 }
 
 .monthStatus {
-  color: var(--green-light);
-
-  font-size: 14px;
-
+  color: #63d494;
   font-weight: 700;
+  font-size: 14px;
 }
 
 
@@ -261,10 +231,7 @@ textarea {
 
 .grid {
   display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    minmax(0, 1fr);
+  grid-template-columns: 1fr 1fr;
 
   gap: 12px;
 
@@ -285,14 +252,11 @@ textarea {
 
 .card small {
   color: var(--muted);
-
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .card h2 {
   margin: 8px 0 0;
-
-  overflow-wrap: anywhere;
 }
 
 .income h2 {
@@ -305,15 +269,7 @@ textarea {
 
 .sectionTitle {
   font-size: 21px;
-
-  margin:
-    28px
-    0
-    13px;
-}
-
-.versionCard {
-  margin-top: 20px;
+  margin: 28px 0 13px;
 }
 
 
@@ -323,9 +279,7 @@ textarea {
 
 .transaction {
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
 
   gap: 12px;
@@ -345,27 +299,29 @@ textarea {
 
 .transactionInfo {
   flex: 1;
-
   min-width: 0;
 }
 
 .transactionInfo strong {
   display: block;
 
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .transactionInfo small {
+  display: block;
+
+  margin-top: 5px;
+
   color: var(--muted);
+
+  line-height: 1.35;
 }
 
 .transactionRight {
   display: flex;
-
   align-items: center;
 
   gap: 8px;
@@ -376,11 +332,7 @@ textarea {
 .amountIncome,
 .amountExpense {
   font-weight: 750;
-
   white-space: nowrap;
-
-  font-variant-numeric:
-    tabular-nums;
 }
 
 .amountIncome {
@@ -391,11 +343,6 @@ textarea {
   color: var(--red);
 }
 
-
-/* =========================================
-   BOTÓN ⋯
-========================================= */
-
 .transactionMenuButton {
   border: 0;
 
@@ -403,36 +350,28 @@ textarea {
 
   color: var(--text);
 
-  width: 38px;
-  height: 38px;
-
-  min-width: 38px;
+  width: 36px;
+  height: 36px;
 
   border-radius: 11px;
 
-  display: flex;
+  font-size: 20px;
+  line-height: 20px;
 
+  display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 22px;
-
-  font-weight: 700;
-
-  line-height: 1;
-
-  padding: 0;
+  flex-shrink: 0;
 }
 
 .transactionMenuButton:active {
-  transform: scale(0.94);
-
-  background: #e3e7eb;
+  transform: scale(0.96);
 }
 
 
 /* =========================================
-   VACÍO
+   SIN INFORMACIÓN
 ========================================= */
 
 .empty {
@@ -449,7 +388,7 @@ textarea {
 
 
 /* =========================================
-   FORMULARIO
+   FORMULARIOS
 ========================================= */
 
 .formCard {
@@ -461,11 +400,11 @@ textarea {
 
   box-shadow:
     0 3px 12px
-    rgba(0, 0, 0, 0.035);
+    rgba(0, 0, 0, 0.025);
 }
 
 .field {
-  margin-bottom: 17px;
+  margin-bottom: 18px;
 }
 
 label {
@@ -476,6 +415,17 @@ label {
   margin-bottom: 7px;
 }
 
+.fieldHelp {
+  display: block;
+
+  margin-top: 8px;
+
+  color: var(--muted);
+
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 
 /* =========================================
    INGRESO / GASTO
@@ -483,10 +433,7 @@ label {
 
 .typeSelector {
   display: grid;
-
-  grid-template-columns:
-    1fr
-    1fr;
+  grid-template-columns: 1fr 1fr;
 
   background: #eef1f4;
 
@@ -506,7 +453,7 @@ label {
 
   background: transparent;
 
-  color: #68727d;
+  color: #68727e;
 
   font-weight: 700;
 
@@ -515,12 +462,11 @@ label {
 
 .typeButton.active {
   background: var(--dark);
-
   color: white;
 
   box-shadow:
-    0 2px 7px
-    rgba(17, 24, 32, 0.14);
+    0 2px 6px
+    rgba(17, 24, 32, 0.15);
 }
 
 
@@ -534,7 +480,6 @@ label {
   border: 0;
 
   background: var(--dark);
-
   color: white;
 
   padding: 16px;
@@ -542,7 +487,6 @@ label {
   border-radius: 14px;
 
   font-size: 16px;
-
   font-weight: 750;
 }
 
@@ -553,9 +497,7 @@ label {
 .secondary {
   width: 100%;
 
-  border:
-    1px solid
-    #dfe3e7;
+  border: 1px solid var(--input-border);
 
   background: white;
 
@@ -566,14 +508,53 @@ label {
   border-radius: 14px;
 
   font-size: 15px;
-
   font-weight: 700;
+}
 
+.secondary:active {
+  background: #f7f8f9;
+}
+
+#cancelEditButton {
   margin-top: 10px;
 }
 
-.dangerText {
-  color: var(--red) !important;
+.deleteButton {
+  border: 0;
+
+  background: var(--red-soft);
+
+  color: var(--red);
+
+  padding: 9px 11px;
+
+  border-radius: 10px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================
+   ACCIONES DENTRO DE CAMPOS
+========================================= */
+
+.inlineAction {
+  border: 0;
+
+  background: transparent;
+
+  color: var(--text);
+
+  padding: 10px 2px 0;
+
+  font-size: 14px;
+  font-weight: 750;
+
+  text-align: left;
+}
+
+.inlineAction:active {
+  opacity: 0.6;
 }
 
 
@@ -591,52 +572,41 @@ label {
   border-radius: 21px;
 
   box-shadow:
-    0 8px 22px
+    0 10px 30px
     rgba(17, 24, 32, 0.08);
 }
 
-.financeLabel {
-  display: inline-block;
-
-  background: rgba(
-    255,
-    255,
-    255,
-    0.1
-  );
-
-  color: #c5ccd4;
-
-  padding:
-    6px
-    9px;
-
-  border-radius: 8px;
-
-  font-size: 11px;
-
-  font-weight: 800;
-
-  letter-spacing: 1.3px;
-
-  margin-bottom: 4px;
-}
-
 .aiCard h2 {
-  margin-bottom: 5px;
+  margin-top: 10px;
 }
 
 .aiCard p {
   color: #aeb7c2;
-
-  margin-top: 5px;
 }
 
 .aiCard input {
   margin-top: 10px;
 }
 
-.aiButton {
+.financeBadge {
+  display: inline-block;
+
+  padding: 6px 9px;
+
+  border-radius: 8px;
+
+  background: #202a35;
+
+  color: #b9c3ce;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.financeButton {
   margin-top: 12px;
 
   background: white;
@@ -660,6 +630,131 @@ label {
 
 
 /* =========================================
+   CLIENTES
+========================================= */
+
+.clientRow {
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 17px;
+
+  margin-bottom: 10px;
+
+  box-shadow:
+    0 2px 8px
+    rgba(0, 0, 0, 0.025);
+}
+
+.clientHeader {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.clientInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.clientInfo strong {
+  display: block;
+
+  font-size: 16px;
+}
+
+.clientInfo small {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--muted);
+}
+
+.clientActions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.smallButton {
+  border: 0;
+
+  background: #eef1f4;
+
+  color: var(--text);
+
+  padding: 9px 11px;
+
+  border-radius: 10px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================
+   PROYECTOS
+========================================= */
+
+.projectList {
+  margin-top: 13px;
+
+  padding-top: 12px;
+
+  border-top: 1px solid var(--border);
+}
+
+.projectRow {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 9px 2px;
+}
+
+.projectRow + .projectRow {
+  border-top: 1px solid #f1f2f4;
+}
+
+.projectName {
+  font-size: 14px;
+}
+
+.projectMeta {
+  color: var(--muted);
+
+  font-size: 12px;
+
+  margin-top: 2px;
+}
+
+.projectDelete {
+  border: 0;
+
+  background: transparent;
+
+  color: var(--red);
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  padding: 7px;
+}
+
+
+/* =========================================
    EMPRESAS
 ========================================= */
 
@@ -667,7 +762,6 @@ label {
   display: flex;
 
   justify-content: space-between;
-
   align-items: center;
 
   gap: 12px;
@@ -679,31 +773,19 @@ label {
   border-radius: 15px;
 
   margin-bottom: 10px;
+
+  box-shadow:
+    0 2px 8px
+    rgba(0, 0, 0, 0.025);
 }
 
 .companyRow small {
   color: var(--muted);
 }
 
-.deleteButton {
-  border: 0;
-
-  background: #fff1ef;
-
-  color: var(--red);
-
-  padding:
-    9px
-    11px;
-
-  border-radius: 10px;
-
-  font-weight: 700;
-}
-
 
 /* =========================================
-   NAVEGACIÓN INFERIOR
+   MENÚ INFERIOR
 ========================================= */
 
 nav {
@@ -716,12 +798,7 @@ nav {
   z-index: 20;
 
   background:
-    rgba(
-      255,
-      255,
-      255,
-      0.96
-    );
+    rgba(255, 255, 255, 0.96);
 
   -webkit-backdrop-filter:
     blur(12px);
@@ -730,8 +807,7 @@ nav {
     blur(12px);
 
   border-top:
-    1px solid
-    #dddddd;
+    1px solid #ddd;
 
   display: flex;
 
@@ -759,9 +835,7 @@ nav {
 
   min-width: 60px;
 
-  padding:
-    2px
-    4px;
+  padding: 2px 4px;
 }
 
 .navIcon {
@@ -778,10 +852,10 @@ nav {
 
 
 /* =========================================
-   MENÚ EDITAR / ELIMINAR
+   MENÚ MOVIMIENTO / BOTTOM SHEET
 ========================================= */
 
-.overlay {
+.transactionOverlay {
   position: fixed;
 
   inset: 0;
@@ -789,12 +863,7 @@ nav {
   z-index: 100;
 
   background:
-    rgba(
-      0,
-      0,
-      0,
-      0.38
-    );
+    rgba(17, 24, 32, 0.42);
 
   display: flex;
 
@@ -802,105 +871,66 @@ nav {
 
   justify-content: center;
 
+  padding: 12px;
+}
+
+.transactionSheet {
+  width: 100%;
+  max-width: 600px;
+
+  background: white;
+
+  border-radius:
+    24px
+    24px
+    18px
+    18px;
+
   padding:
-    14px
+    10px
     14px
     calc(
       14px +
       env(safe-area-inset-bottom)
     );
-}
-
-.actionSheet {
-  width: 100%;
-
-  max-width: 520px;
-
-  background: var(--bg);
-
-  border-radius: 22px;
-
-  padding:
-    9px
-    9px
-    10px;
 
   box-shadow:
-    0 15px 50px
-    rgba(0, 0, 0, 0.22);
-
-  animation:
-    sheetUp
-    0.2s ease-out;
+    0 -12px 40px
+    rgba(0, 0, 0, 0.16);
 }
 
-@keyframes sheetUp {
-
-  from {
-    transform:
-      translateY(30px);
-
-    opacity: 0;
-  }
-
-  to {
-    transform:
-      translateY(0);
-
-    opacity: 1;
-  }
-}
-
-.actionSheetHandle {
-  width: 40px;
-
+.sheetHandle {
+  width: 42px;
   height: 5px;
 
-  background: #cfd4da;
+  background: #d9dde1;
 
-  border-radius: 100px;
+  border-radius: 10px;
 
-  margin:
-    3px
-    auto
-    12px;
+  margin: 2px auto 16px;
 }
 
-.actionSheetHeader {
-  background: white;
+.sheetHeader {
+  padding: 5px 7px 17px;
 
-  padding:
-    17px
-    16px;
-
-  border-radius: 15px;
-
-  margin-bottom: 8px;
+  border-bottom:
+    1px solid var(--border);
 }
 
-.actionSheetHeader small {
-  display: block;
-
+.sheetHeader small {
   color: var(--muted);
-
-  margin-bottom: 5px;
 }
 
-.actionSheetHeader strong {
-  display: block;
+.sheetHeader h3 {
+  margin: 5px 0 7px;
+}
 
+.sheetHeader strong {
   font-size: 17px;
-
-  margin-bottom: 4px;
 }
 
-.actionSheetHeader span {
-  color: #65707b;
-
-  font-size: 14px;
-}
-
-.sheetButton {
+.sheetAction,
+.sheetCancel {
   width: 100%;
 
   border: 0;
@@ -909,27 +939,34 @@ nav {
 
   color: var(--text);
 
-  padding: 17px;
+  text-align: left;
+
+  padding: 16px 8px;
 
   font-size: 16px;
 
-  font-weight: 700;
+  font-weight: 650;
 
-  margin-bottom: 2px;
+  border-bottom:
+    1px solid var(--border);
 }
 
-.sheetButton:first-of-type {
-  border-radius:
-    15px
-    15px
-    4px
-    4px;
+.dangerText {
+  color: var(--red);
 }
 
-.cancelSheet {
+.sheetCancel {
   margin-top: 8px;
 
-  border-radius: 15px !important;
+  text-align: center;
+
+  border: 0;
+
+  background: #f2f4f6;
+
+  border-radius: 13px;
+
+  font-weight: 750;
 }
 
 
@@ -947,7 +984,7 @@ nav {
 
   bottom:
     calc(
-      102px +
+      105px +
       env(safe-area-inset-bottom)
     );
 
@@ -955,9 +992,7 @@ nav {
 
   color: white;
 
-  padding:
-    12px
-    18px;
+  padding: 12px 18px;
 
   border-radius: 30px;
 
@@ -967,29 +1002,31 @@ nav {
 
   font-size: 14px;
 
-  white-space: nowrap;
-
   box-shadow:
-    0 5px 18px
+    0 8px 25px
     rgba(0, 0, 0, 0.18);
+
+  max-width:
+    calc(100% - 36px);
+
+  text-align: center;
 }
 
 
 /* =========================================
-   CELULAR
+   MÓVIL
 ========================================= */
 
 @media (max-width: 500px) {
 
   main {
     padding:
-      21px
-      15px
-      30px;
+      20px
+      14px;
   }
 
   .balance {
-    padding: 24px;
+    padding: 23px;
   }
 
   .balance h1 {
@@ -1000,22 +1037,12 @@ nav {
     padding: 17px;
   }
 
-  .grid {
-    gap: 10px;
-  }
-
-  .grid .card h2 {
-    font-size: 19px;
+  .formCard {
+    padding: 17px;
   }
 
   .transaction {
-    padding:
-      14px
-      12px;
-  }
-
-  .transactionRight {
-    gap: 6px;
+    padding: 14px;
   }
 
   .amountIncome,
@@ -1024,11 +1051,10 @@ nav {
   }
 
   .transactionMenuButton {
-    width: 36px;
-    height: 36px;
-
-    min-width: 36px;
+    width: 34px;
+    height: 34px;
   }
+
 }
 
 
@@ -1036,19 +1062,31 @@ nav {
    PANTALLAS MUY PEQUEÑAS
 ========================================= */
 
-@media (max-width: 365px) {
-
-  .balance h1 {
-    font-size: 30px;
-  }
+@media (max-width: 370px) {
 
   .grid {
     grid-template-columns: 1fr;
   }
 
-  .navItem {
-    min-width: 52px;
-
-    font-size: 10px;
+  .company {
+    align-items: flex-start;
   }
+
+  .company select {
+    max-width: 48%;
+  }
+
+  .balance h1 {
+    font-size: 30px;
+  }
+
+  .transactionRight {
+    gap: 5px;
+  }
+
+  .amountIncome,
+  .amountExpense {
+    font-size: 13px;
+  }
+
 }
