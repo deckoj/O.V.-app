@@ -1,1237 +1,440 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#101720">
-<title>OV</title>
+  <meta charset="UTF-8">
 
-<style>
-*{box-sizing:border-box}
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
 
-:root{
-  --dark:#111820;
-  --bg:#f5f7f9;
-  --card:#fff;
-  --muted:#89939f;
-  --green:#2f8f5b;
-  --red:#c44738;
-  --border:#e7e9ec;
-}
+  <meta name="theme-color" content="#101720">
 
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:var(--bg);
-  color:#17212b;
-  padding-bottom:100px;
-}
+  <title>OV</title>
 
-header{
-  background:var(--dark);
-  color:white;
-  padding:32px 22px 28px;
-}
-
-.logo{
-  font-size:32px;
-  font-weight:900;
-  letter-spacing:3px;
-}
-
-.subtitle{
-  margin-top:6px;
-  color:#9fa9b5;
-  font-size:14px;
-}
-
-main{
-  max-width:850px;
-  margin:auto;
-  padding:24px 18px;
-}
-
-.page{display:none}
-.page.active{display:block}
-
-.company{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:15px;
-  margin-bottom:24px;
-}
-
-.company small{color:#6f7984}
-
-.company h2{
-  margin:3px 0 0;
-  font-size:25px;
-}
-
-select,input,textarea{
-  width:100%;
-  border:1px solid #dfe3e7;
-  background:white;
-  padding:14px;
-  border-radius:13px;
-  font-size:16px;
-  font-family:inherit;
-}
-
-.company select{
-  width:auto;
-  max-width:52%;
-  font-weight:600;
-}
-
-.balance{
-  background:var(--dark);
-  color:white;
-  padding:27px;
-  border-radius:23px;
-}
-
-.balance small{
-  color:#aeb7c2;
-  font-size:15px;
-}
-
-.balance h1{
-  margin:10px 0 6px;
-  font-size:39px;
-}
-
-.monthStatus{
-  color:#63d494;
-  font-weight:700;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:14px;
-}
-
-.card{
-  background:white;
-  border-radius:19px;
-  padding:20px;
-  box-shadow:0 3px 12px rgba(0,0,0,.035);
-}
-
-.card small{
-  color:var(--muted);
-  font-weight:600;
-}
-
-.card h2{margin:8px 0 0}
-
-.income h2{color:var(--green)}
-.expense h2{color:var(--red)}
-
-.sectionTitle{
-  font-size:21px;
-  margin:28px 0 13px;
-}
-
-.transaction{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-  background:white;
-  padding:16px;
-  border-radius:14px;
-  margin-bottom:9px;
-}
-
-.transaction small{color:var(--muted)}
-
-.amountIncome{
-  color:var(--green);
-  font-weight:750;
-  white-space:nowrap;
-}
-
-.amountExpense{
-  color:var(--red);
-  font-weight:750;
-  white-space:nowrap;
-}
-
-.empty{
-  background:white;
-  padding:30px 20px;
-  text-align:center;
-  border-radius:18px;
-  color:var(--muted);
-}
-
-.formCard{
-  background:white;
-  border-radius:20px;
-  padding:20px;
-}
-
-.field{margin-bottom:17px}
-
-label{
-  display:block;
-  font-weight:650;
-  margin-bottom:7px;
-}
-
-.typeSelector{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  background:#eef1f4;
-  padding:4px;
-  border-radius:13px;
-  margin-bottom:20px;
-}
-
-.typeButton{
-  border:0;
-  padding:12px;
-  border-radius:10px;
-  background:transparent;
-  font-weight:700;
-  font-size:15px;
-}
-
-.typeButton.active{
-  background:var(--dark);
-  color:white;
-}
-
-.primary{
-  width:100%;
-  border:0;
-  background:var(--dark);
-  color:white;
-  padding:16px;
-  border-radius:14px;
-  font-size:16px;
-  font-weight:750;
-}
-
-.secondary{
-  width:100%;
-  border:1px solid #dfe3e7;
-  background:white;
-  color:#17212b;
-  padding:14px;
-  border-radius:14px;
-  font-size:15px;
-  font-weight:700;
-}
-
-.danger{
-  width:100%;
-  border:1px solid #f0cbc6;
-  background:#fff;
-  color:var(--red);
-  padding:14px;
-  border-radius:14px;
-  font-size:15px;
-  font-weight:700;
-}
-
-.aiCard{
-  background:var(--dark);
-  color:white;
-  padding:23px;
-  border-radius:21px;
-}
-
-.aiCard p{color:#aeb7c2}
-.aiCard input{margin-top:10px}
-
-.aiAnswer{
-  margin-top:16px;
-  padding:15px;
-  background:#202a35;
-  border-radius:13px;
-  display:none;
-}
-
-.companyRow{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  background:white;
-  padding:17px;
-  border-radius:15px;
-  margin-bottom:10px;
-}
-
-.companyRow small{
-  color:var(--muted);
-}
-
-.deleteButton{
-  border:0;
-  background:#fff1ef;
-  color:var(--red);
-  padding:9px 11px;
-  border-radius:10px;
-  font-weight:700;
-}
-
-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  z-index:20;
-  background:rgba(255,255,255,.96);
-  backdrop-filter:blur(12px);
-  border-top:1px solid #ddd;
-  display:flex;
-  justify-content:space-around;
-  padding:10px 3px calc(12px + env(safe-area-inset-bottom));
-}
-
-.navItem{
-  border:0;
-  background:none;
-  color:#7b8490;
-  font-size:11px;
-  font-weight:600;
-  min-width:60px;
-}
-
-.navIcon{
-  display:block;
-  font-size:20px;
-  height:25px;
-}
-
-.navItem.active{color:#111820}
-
-.toast{
-  position:fixed;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:105px;
-  background:#111820;
-  color:white;
-  padding:12px 18px;
-  border-radius:30px;
-  display:none;
-  z-index:50;
-  font-size:14px;
-}
-
-@media(max-width:500px){
-  .balance h1{font-size:36px}
-  .card{padding:18px}
-}
-</style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
 <header>
   <div class="logo">OV</div>
-  <div class="subtitle">Inteligencia financiera empresarial</div>
+  <div class="subtitle">
+    Inteligencia financiera empresarial
+  </div>
 </header>
+
 
 <main>
 
-<section id="home" class="page active">
+  <!-- =========================
+       INICIO
+  ========================== -->
 
-  <div class="company">
-    <div>
-      <small>Empresa</small>
-      <h2 id="companyTitle">Grupo Decko</h2>
-    </div>
+  <section id="home" class="page active">
 
-    <select id="companySelect" onchange="changeCompany()"></select>
-  </div>
+    <div class="company">
 
-  <div class="balance">
-    <small>Disponible</small>
-    <h1 id="balance">$0</h1>
-    <div class="monthStatus">● Flujo actualizado</div>
-  </div>
+      <div>
+        <small>Empresa</small>
+        <h2 id="companyTitle">Grupo Decko</h2>
+      </div>
 
-  <div class="grid">
-    <div class="card income">
-      <small>Ingresos</small>
-      <h2 id="income">$0</h2>
-    </div>
-
-    <div class="card expense">
-      <small>Gastos</small>
-      <h2 id="expense">$0</h2>
-    </div>
-  </div>
-
-  <h3 class="sectionTitle">Flujo del mes</h3>
-
-  <div class="card">
-    <small>Resultado</small>
-    <h2 id="result">$0</h2>
-    <p style="color:#89939f">Ingresos menos gastos registrados.</p>
-  </div>
-
-  <h3 class="sectionTitle">Movimientos recientes</h3>
-  <div id="recentTransactions"></div>
-
-</section>
-
-
-<section id="movements" class="page">
-
-  <h1>Movimientos</h1>
-  <p id="movementCompanyText" style="color:#89939f"></p>
-
-  <div id="allTransactions"></div>
-
-</section>
-
-
-<section id="add" class="page">
-
-  <h1>Agregar movimiento</h1>
-
-  <p id="addCompanyText" style="color:#89939f"></p>
-
-  <div class="formCard">
-
-    <div class="typeSelector">
-      <button id="incomeBtn" class="typeButton active"
-      onclick="setType('income')">Ingreso</button>
-
-      <button id="expenseBtn" class="typeButton"
-      onclick="setType('expense')">Gasto</button>
-    </div>
-
-    <div class="field">
-      <label>Monto</label>
-      <input id="amount" type="number"
-      inputmode="decimal" placeholder="$0.00">
-    </div>
-
-    <div class="field">
-      <label>Concepto</label>
-      <input id="concept"
-      placeholder="Ej. Mantenimiento Altozano">
-    </div>
-
-    <div class="field">
-      <label>Categoría</label>
-      <select id="category">
-        <option>Ventas</option>
-        <option>Mantenimiento</option>
-        <option>Nómina</option>
-        <option>Materiales</option>
-        <option>Proveedores</option>
-        <option>Transporte</option>
-        <option>Impuestos</option>
-        <option>Servicios</option>
-        <option>Renta</option>
-        <option>Marketing</option>
-        <option>Equipos</option>
-        <option>Otros</option>
+      <select
+        id="companySelect"
+        onchange="changeCompany()">
       </select>
+
     </div>
 
-    <div class="field">
-      <label>Fecha</label>
-      <input id="date" type="date">
+
+    <div class="balance">
+
+      <small>Disponible</small>
+
+      <h1 id="balance">
+        $0.00 MXN
+      </h1>
+
+      <div class="monthStatus">
+        ● Flujo actualizado
+      </div>
+
     </div>
 
-    <div class="field">
-      <label>Notas</label>
-      <textarea id="notes"
-      rows="3"
-      placeholder="Información adicional (opcional)"></textarea>
+
+    <div class="grid">
+
+      <div class="card income">
+
+        <small>Ingresos</small>
+
+        <h2 id="income">
+          $0.00 MXN
+        </h2>
+
+      </div>
+
+
+      <div class="card expense">
+
+        <small>Gastos</small>
+
+        <h2 id="expense">
+          $0.00 MXN
+        </h2>
+
+      </div>
+
     </div>
 
-    <button class="primary" onclick="saveTransaction()">
-      Guardar movimiento
-    </button>
 
-  </div>
-
-</section>
+    <h3 class="sectionTitle">
+      Flujo del mes
+    </h3>
 
 
-<section id="ai" class="page">
+    <div class="card">
 
-  <h1>OV IA</h1>
+      <small>Resultado</small>
 
-  <div class="aiCard">
+      <h2 id="result">
+        $0.00 MXN
+      </h2>
 
-    <h2>Tu analista financiero</h2>
+      <p style="color:#89939f">
+        Ingresos menos gastos registrados.
+      </p>
 
-    <p id="aiCompanyText"></p>
+    </div>
 
-    <input id="aiQuestion"
-    placeholder="Ej. ¿Cuánto he gastado?">
+
+    <h3 class="sectionTitle">
+      Movimientos recientes
+    </h3>
+
+    <div id="recentTransactions"></div>
+
+  </section>
+
+
+
+  <!-- =========================
+       MOVIMIENTOS
+  ========================== -->
+
+  <section id="movements" class="page">
+
+    <h1>Movimientos</h1>
+
+    <p
+      id="movementCompanyText"
+      style="color:#89939f">
+    </p>
+
+    <div id="allTransactions"></div>
+
+  </section>
+
+
+
+  <!-- =========================
+       AGREGAR
+  ========================== -->
+
+  <section id="add" class="page">
+
+    <h1>Agregar movimiento</h1>
+
+    <p
+      id="addCompanyText"
+      style="color:#89939f">
+    </p>
+
+
+    <div class="formCard">
+
+
+      <div class="typeSelector">
+
+        <button
+          id="incomeBtn"
+          class="typeButton active"
+          onclick="setType('income')">
+          Ingreso
+        </button>
+
+        <button
+          id="expenseBtn"
+          class="typeButton"
+          onclick="setType('expense')">
+          Gasto
+        </button>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Monto</label>
+
+        <input
+          id="amount"
+          type="number"
+          inputmode="decimal"
+          step="0.01"
+          placeholder="$0.00 MXN"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Concepto</label>
+
+        <input
+          id="concept"
+          placeholder="Ej. Mantenimiento Altozano"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Categoría</label>
+
+        <select id="category">
+
+          <option>Ventas</option>
+          <option>Mantenimiento</option>
+          <option>Nómina</option>
+          <option>Materiales</option>
+          <option>Proveedores</option>
+          <option>Transporte</option>
+          <option>Impuestos</option>
+          <option>Servicios</option>
+          <option>Renta</option>
+          <option>Marketing</option>
+          <option>Equipos</option>
+          <option>Otros</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Fecha</label>
+
+        <input
+          id="date"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Notas</label>
+
+        <textarea
+          id="notes"
+          rows="3"
+          placeholder="Información adicional (opcional)">
+        </textarea>
+
+      </div>
+
+
+      <button
+        class="primary"
+        onclick="saveTransaction()">
+
+        Guardar movimiento
+
+      </button>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================
+       FINANCE
+  ========================== -->
+
+  <section id="ai" class="page">
+
+    <h1>Finance</h1>
+
+
+    <div class="aiCard">
+
+      <h2>
+        Tu inteligencia financiera
+      </h2>
+
+      <p id="aiCompanyText"></p>
+
+
+      <input
+        id="aiQuestion"
+        placeholder="Ej. ¿Cuánto hemos gastado este mes?"
+      >
+
+
+      <button
+        class="primary"
+        style="
+          margin-top:12px;
+          background:white;
+          color:#111820
+        "
+        onclick="askOV()">
+
+        Preguntar a Finance
+
+      </button>
+
+
+      <div
+        id="aiAnswer"
+        class="aiAnswer">
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================
+       MÁS
+  ========================== -->
+
+  <section id="more" class="page">
+
+    <h1>Más</h1>
+
+
+    <div class="card">
+
+      <strong>
+        Empresa actual
+      </strong>
+
+      <p id="moreCompanyName"></p>
+
+    </div>
+
+
+    <h3 class="sectionTitle">
+      Empresas
+    </h3>
+
+
+    <div id="companyList"></div>
+
 
     <button
       class="primary"
-      style="margin-top:12px;background:white;color:#111820"
-      onclick="askOV()">
-      Preguntar a OV
+      onclick="createCompany()">
+
+      ＋ Crear nueva empresa
+
     </button>
 
-    <div id="aiAnswer" class="aiAnswer"></div>
 
-  </div>
+    <div
+      class="card"
+      style="margin-top:20px">
 
-</section>
+      <strong>OV</strong>
 
+      <p style="color:#89939f">
+        Versión MVP 0.4
+      </p>
 
-<section id="more" class="page">
+    </div>
 
-  <h1>Más</h1>
-
-  <div class="card">
-    <strong>Empresa actual</strong>
-    <p id="moreCompanyName"></p>
-  </div>
-
-  <h3 class="sectionTitle">Empresas</h3>
-
-  <div id="companyList"></div>
-
-  <button class="primary" onclick="createCompany()">
-    ＋ Crear nueva empresa
-  </button>
-
-  <div class="card" style="margin-top:20px">
-    <strong>OV</strong>
-    <p style="color:#89939f">
-      Versión MVP 0.3
-    </p>
-  </div>
-
-</section>
+  </section>
 
 </main>
 
 
+
+<!-- =========================
+     NAVEGACIÓN
+========================== -->
+
 <nav>
 
-<button class="navItem active" onclick="showPage('home',this)">
-<span class="navIcon">⌂</span>
-Inicio
-</button>
+  <button
+    class="navItem active"
+    onclick="showPage('home',this)">
 
-<button class="navItem" onclick="showPage('movements',this)">
-<span class="navIcon">↕</span>
-Movimientos
-</button>
+    <span class="navIcon">⌂</span>
+    Inicio
 
-<button class="navItem" onclick="showPage('add',this)">
-<span class="navIcon">＋</span>
-Agregar
-</button>
+  </button>
 
-<button class="navItem" onclick="showPage('ai',this)">
-<span class="navIcon">◎</span>
-OV IA
-</button>
 
-<button class="navItem" onclick="showPage('more',this)">
-<span class="navIcon">☰</span>
-Más
-</button>
+  <button
+    class="navItem"
+    onclick="showPage('movements',this)">
+
+    <span class="navIcon">↕</span>
+    Movimientos
+
+  </button>
+
+
+  <button
+    class="navItem"
+    onclick="showPage('add',this)">
+
+    <span class="navIcon">＋</span>
+    Agregar
+
+  </button>
+
+
+  <button
+    class="navItem"
+    onclick="showPage('ai',this)">
+
+    <span class="navIcon">◎</span>
+    Finance
+
+  </button>
+
+
+  <button
+    class="navItem"
+    onclick="showPage('more',this)">
+
+    <span class="navIcon">☰</span>
+    Más
+
+  </button>
 
 </nav>
 
-<div id="toast" class="toast"></div>
 
+<div
+  id="toast"
+  class="toast">
+</div>
 
-<script>
 
-let transactionType="income";
-
-/* ---------- EMPRESAS ---------- */
-
-let companies=
-JSON.parse(localStorage.getItem("ov_companies")) || [
-  {
-    id:"grupo-decko",
-    name:"Grupo Decko"
-  }
-];
-
-let activeCompanyId=
-localStorage.getItem("ov_active_company") ||
-companies[0].id;
-
-
-/* ---------- MIGRACIÓN DE DATOS ANTERIORES ---------- */
-
-let oldTransactions=
-JSON.parse(localStorage.getItem("ov_transactions")) || [];
-
-let companyTransactions=
-JSON.parse(localStorage.getItem("ov_company_transactions"));
-
-if(!companyTransactions){
-
-  companyTransactions={};
-
-  companyTransactions["grupo-decko"]=oldTransactions;
-
-  localStorage.setItem(
-    "ov_company_transactions",
-    JSON.stringify(companyTransactions)
-  );
-
-}
-
-companies.forEach(company=>{
-
-  if(!companyTransactions[company.id]){
-    companyTransactions[company.id]=[];
-  }
-
-});
-
-
-/* ---------- UTILIDADES ---------- */
-
-function getActiveCompany(){
-
-  return companies.find(
-    c=>c.id===activeCompanyId
-  ) || companies[0];
-
-}
-
-function getTransactions(){
-
-  if(!companyTransactions[activeCompanyId]){
-    companyTransactions[activeCompanyId]=[];
-  }
-
-  return companyTransactions[activeCompanyId];
-
-}
-
-function money(number){
-
-  return new Intl.NumberFormat(
-    "es-MX",
-    {
-      style:"currency",
-      currency:"MXN",
-      maximumFractionDigits:0
-    }
-  ).format(number);
-
-}
-
-function saveData(){
-
-  localStorage.setItem(
-    "ov_companies",
-    JSON.stringify(companies)
-  );
-
-  localStorage.setItem(
-    "ov_active_company",
-    activeCompanyId
-  );
-
-  localStorage.setItem(
-    "ov_company_transactions",
-    JSON.stringify(companyTransactions)
-  );
-
-}
-
-
-/* ---------- SELECTOR EMPRESA ---------- */
-
-function renderCompanySelector(){
-
-  const select=
-  document.getElementById("companySelect");
-
-  select.innerHTML="";
-
-  companies.forEach(company=>{
-
-    const option=document.createElement("option");
-
-    option.value=company.id;
-    option.textContent=company.name;
-
-    if(company.id===activeCompanyId){
-      option.selected=true;
-    }
-
-    select.appendChild(option);
-
-  });
-
-}
-
-function changeCompany(){
-
-  activeCompanyId=
-  document.getElementById("companySelect").value;
-
-  saveData();
-  updateCompanyUI();
-  calculate();
-
-  showToast("Empresa cambiada");
-
-}
-
-
-/* ---------- CREAR EMPRESA ---------- */
-
-function createCompany(){
-
-  const name=prompt(
-    "¿Cómo se llama la nueva empresa?"
-  );
-
-  if(!name) return;
-
-  const cleanName=name.trim();
-
-  if(!cleanName) return;
-
-  const alreadyExists=
-  companies.some(
-    c=>c.name.toLowerCase()===cleanName.toLowerCase()
-  );
-
-  if(alreadyExists){
-    alert("Ya existe una empresa con ese nombre.");
-    return;
-  }
-
-  const id=
-  "company-"+Date.now();
-
-  companies.push({
-    id,
-    name:cleanName
-  });
-
-  companyTransactions[id]=[];
-
-  activeCompanyId=id;
-
-  saveData();
-  renderCompanySelector();
-  updateCompanyUI();
-  renderCompanyList();
-  calculate();
-
-  showToast("Empresa creada");
-
-}
-
-
-/* ---------- ELIMINAR EMPRESA ---------- */
-
-function deleteCompany(id){
-
-  if(companies.length===1){
-    alert("OV debe tener al menos una empresa.");
-    return;
-  }
-
-  const company=
-  companies.find(c=>c.id===id);
-
-  if(!company) return;
-
-  const confirmed=confirm(
-    `¿Eliminar "${company.name}"?\n\nTambién se eliminarán sus movimientos guardados en este dispositivo.`
-  );
-
-  if(!confirmed) return;
-
-  companies=
-  companies.filter(c=>c.id!==id);
-
-  delete companyTransactions[id];
-
-  if(activeCompanyId===id){
-    activeCompanyId=companies[0].id;
-  }
-
-  saveData();
-  renderCompanySelector();
-  updateCompanyUI();
-  renderCompanyList();
-  calculate();
-
-  showToast("Empresa eliminada");
-
-}
-
-
-/* ---------- LISTA DE EMPRESAS ---------- */
-
-function renderCompanyList(){
-
-  const container=
-  document.getElementById("companyList");
-
-  container.innerHTML="";
-
-  companies.forEach(company=>{
-
-    const transactions=
-    companyTransactions[company.id] || [];
-
-    const row=document.createElement("div");
-    row.className="companyRow";
-
-    const left=document.createElement("div");
-
-    const strong=document.createElement("strong");
-    strong.textContent=company.name;
-
-    const br=document.createElement("br");
-
-    const small=document.createElement("small");
-    small.textContent=
-    `${transactions.length} movimiento${transactions.length===1 ? "" : "s"}`;
-
-    left.appendChild(strong);
-    left.appendChild(br);
-    left.appendChild(small);
-
-    const right=document.createElement("div");
-
-    if(company.id===activeCompanyId){
-
-      const current=document.createElement("small");
-      current.textContent="Actual";
-      right.appendChild(current);
-
-    }else{
-
-      const button=document.createElement("button");
-      button.className="deleteButton";
-      button.textContent="Eliminar";
-      button.onclick=()=>deleteCompany(company.id);
-
-      right.appendChild(button);
-
-    }
-
-    row.appendChild(left);
-    row.appendChild(right);
-
-    container.appendChild(row);
-
-  });
-
-}
-
-
-/* ---------- UI EMPRESA ---------- */
-
-function updateCompanyUI(){
-
-  const company=getActiveCompany();
-
-  if(!company) return;
-
-  document.getElementById("companyTitle")
-  .textContent=company.name;
-
-  document.getElementById("movementCompanyText")
-  .textContent=`Historial de ${company.name}.`;
-
-  document.getElementById("addCompanyText")
-  .textContent=`Registrando movimiento en ${company.name}.`;
-
-  document.getElementById("aiCompanyText")
-  .textContent=`Analizando la información registrada de ${company.name}.`;
-
-  document.getElementById("moreCompanyName")
-  .textContent=company.name;
-
-  renderCompanyList();
-
-}
-
-
-/* ---------- CÁLCULOS ---------- */
-
-function calculate(){
-
-  const transactions=getTransactions();
-
-  let income=0;
-  let expense=0;
-
-  transactions.forEach(t=>{
-
-    if(t.type==="income"){
-      income+=Number(t.amount);
-    }else{
-      expense+=Number(t.amount);
-    }
-
-  });
-
-  const balance=income-expense;
-
-  document.getElementById("income")
-  .innerText=money(income);
-
-  document.getElementById("expense")
-  .innerText=money(expense);
-
-  document.getElementById("balance")
-  .innerText=money(balance);
-
-  document.getElementById("result")
-  .innerText=money(balance);
-
-  renderTransactions();
-
-}
-
-
-/* ---------- MOVIMIENTOS ---------- */
-
-function renderTransactions(){
-
-  const transactions=getTransactions();
-
-  const sorted=[...transactions].sort(
-    (a,b)=>b.id-a.id
-  );
-
-  const recent=
-  document.getElementById("recentTransactions");
-
-  const all=
-  document.getElementById("allTransactions");
-
-  recent.innerHTML="";
-  all.innerHTML="";
-
-  if(sorted.length===0){
-
-    const empty=
-    '<div class="empty">Aún no hay movimientos en esta empresa.</div>';
-
-    recent.innerHTML=empty;
-    all.innerHTML=empty;
-
-    return;
-
-  }
-
-  sorted.forEach((t,index)=>{
-
-    const sign=
-    t.type==="income" ? "+" : "-";
-
-    const amountClass=
-    t.type==="income"
-    ? "amountIncome"
-    : "amountExpense";
-
-    const html=`
-    <div class="transaction">
-
-      <div>
-        <strong>${escapeHTML(t.concept)}</strong><br>
-        <small>
-          ${escapeHTML(t.category)} · ${formatDate(t.date)}
-        </small>
-      </div>
-
-      <div class="${amountClass}">
-        ${sign}${money(t.amount)}
-      </div>
-
-    </div>`;
-
-    all.innerHTML+=html;
-
-    if(index<3){
-      recent.innerHTML+=html;
-    }
-
-  });
-
-}
-
-
-/* ---------- TIPO MOVIMIENTO ---------- */
-
-function setType(type){
-
-  transactionType=type;
-
-  document.getElementById("incomeBtn")
-  .classList.toggle(
-    "active",
-    type==="income"
-  );
-
-  document.getElementById("expenseBtn")
-  .classList.toggle(
-    "active",
-    type==="expense"
-  );
-
-}
-
-
-/* ---------- GUARDAR MOVIMIENTO ---------- */
-
-function saveTransaction(){
-
-  const amount=
-  Number(
-    document.getElementById("amount").value
-  );
-
-  const concept=
-  document.getElementById("concept")
-  .value.trim();
-
-  const category=
-  document.getElementById("category").value;
-
-  const date=
-  document.getElementById("date").value;
-
-  const notes=
-  document.getElementById("notes")
-  .value.trim();
-
-  if(!amount || amount<=0){
-
-    alert("Ingresa un monto válido.");
-    return;
-
-  }
-
-  if(!concept){
-
-    alert("Escribe el concepto del movimiento.");
-    return;
-
-  }
-
-  const transactions=getTransactions();
-
-  transactions.push({
-
-    id:Date.now(),
-    type:transactionType,
-    amount,
-    concept,
-    category,
-    date:
-      date ||
-      new Date().toISOString().slice(0,10),
-    notes
-
-  });
-
-  companyTransactions[activeCompanyId]=transactions;
-
-  saveData();
-  calculate();
-  renderCompanyList();
-
-  document.getElementById("amount").value="";
-  document.getElementById("concept").value="";
-  document.getElementById("notes").value="";
-
-  showToast("Movimiento guardado");
-
-  showPage(
-    "home",
-    document.querySelectorAll(".navItem")[0]
-  );
-
-}
-
-
-/* ---------- NAVEGACIÓN ---------- */
-
-function showPage(page,button){
-
-  document.querySelectorAll(".page")
-  .forEach(
-    p=>p.classList.remove("active")
-  );
-
-  document.getElementById(page)
-  .classList.add("active");
-
-  document.querySelectorAll(".navItem")
-  .forEach(
-    n=>n.classList.remove("active")
-  );
-
-  if(button){
-    button.classList.add("active");
-  }
-
-  if(page==="more"){
-    renderCompanyList();
-  }
-
-  window.scrollTo(0,0);
-
-}
-
-
-/* ---------- AVISOS ---------- */
-
-function showToast(message){
-
-  const toast=
-  document.getElementById("toast");
-
-  toast.textContent=
-  message || "Guardado";
-
-  toast.style.display="block";
-
-  setTimeout(()=>{
-
-    toast.style.display="none";
-
-  },1800);
-
-}
-
-
-/* ---------- OV IA ---------- */
-
-function askOV(){
-
-  const question=
-  document.getElementById("aiQuestion")
-  .value.toLowerCase();
-
-  const transactions=getTransactions();
-
-  let income=0;
-  let expense=0;
-
-  transactions.forEach(t=>{
-
-    if(t.type==="income"){
-      income+=Number(t.amount);
-    }else{
-      expense+=Number(t.amount);
-    }
-
-  });
-
-  const company=getActiveCompany();
-
-  let response;
-
-  if(question.includes("gasto")){
-
-    response=
-    `${company.name} tiene ${money(expense)} registrados en gastos.`;
-
-  }
-
-  else if(
-    question.includes("ingreso") ||
-    question.includes("venta")
-  ){
-
-    response=
-    `${company.name} tiene ${money(income)} registrados en ingresos.`;
-
-  }
-
-  else if(
-    question.includes("disponible") ||
-    question.includes("saldo") ||
-    question.includes("flujo")
-  ){
-
-    response=
-    `El flujo registrado de ${company.name} es de ${money(income-expense)}.`;
-
-  }
-
-  else{
-
-    response=
-    `${company.name} tiene ${money(income)} en ingresos y ${money(expense)} en gastos, dejando un flujo de ${money(income-expense)}.`;
-
-  }
-
-  const box=
-  document.getElementById("aiAnswer");
-
-  box.innerText=response;
-  box.style.display="block";
-
-}
-
-
-/* ---------- FECHA ---------- */
-
-function formatDate(date){
-
-  if(!date) return "";
-
-  const parts=date.split("-");
-
-  if(parts.length!==3){
-    return date;
-  }
-
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
-
-}
-
-
-/* ---------- SEGURIDAD TEXTO ---------- */
-
-function escapeHTML(value){
-
-  const div=
-  document.createElement("div");
-
-  div.textContent=value;
-
-  return div.innerHTML;
-
-}
-
-
-/* ---------- INICIO ---------- */
-
-document.getElementById("date").value=
-new Date().toISOString().slice(0,10);
-
-saveData();
-renderCompanySelector();
-updateCompanyUI();
-calculate();
-
-</script>
+<!-- CEREBRO DE OV -->
+<script src="app.js"></script>
 
 </body>
 </html>
