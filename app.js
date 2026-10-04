@@ -2917,7 +2917,96 @@ function editTransaction(id) {
 /* =========================================
    ELIMINAR MOVIMIENTO
 ========================================= */
+async function deleteTransactionFromSupabase(
+  transaction
+) {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible para eliminar movimiento."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    let query =
+      ovSupabase
+        .from("transactions")
+        .delete()
+        .eq(
+          "company_id",
+          companyId
+        );
+
+
+    /*
+      Si el movimiento vino de Supabase,
+      usamos directamente su UUID.
+    */
+
+    if (transaction.supabaseId) {
+
+      query =
+        query.eq(
+          "id",
+          transaction.supabaseId
+        );
+
+    } else {
+
+      /*
+        Si fue creado localmente,
+        buscamos por legacy_id.
+      */
+
+      query =
+        query.eq(
+          "legacy_id",
+          transaction.id
+        );
+    }
+
+
+    const {
+      error
+    } =
+      await query;
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    console.info(
+      "OV Supabase: movimiento eliminado.",
+      transaction.concept
+    );
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al eliminar movimiento:",
+      error
+    );
+
+    return false;
+  }
+}
 function deleteTransaction(id) {
 
   const transactions =
