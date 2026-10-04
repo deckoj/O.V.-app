@@ -3013,11 +3013,11 @@ function deleteTransaction(id) {
     getTransactions();
 
   const transaction =
-    transactions.find(
-      transaction =>
-        Number(transaction.id) ===
-        Number(id)
-    );
+  transactions.find(
+    transaction =>
+      String(transaction.id) ===
+      String(id)
+  );
 
   if (!transaction) return;
 
@@ -3046,15 +3046,15 @@ deleteTransactionFromSupabase(
   ] =
     transactions.filter(
       transaction =>
-        Number(transaction.id) !==
-        Number(id)
+        String(transaction.id) !==
+String(id)
     );
 
 
-  if (
-    editingTransactionId ===
-    Number(id)
-  ) {
+if (
+  String(editingTransactionId) ===
+  String(id)
+) {
 
     editingTransactionId =
       null;
