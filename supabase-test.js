@@ -1,14 +1,9 @@
 /* =========================================
    OV APP — PRUEBA DE SUPABASE
-   SOLO LECTURA
+   SOLO CONEXIÓN Y SESIÓN
 ========================================= */
 
 async function checkSupabaseConnection() {
-
-  /*
-    1. Verificar que Supabase
-    esté cargado correctamente
-  */
 
   if (
     typeof ovSupabase === "undefined" ||
@@ -16,16 +11,12 @@ async function checkSupabaseConnection() {
   ) {
 
     console.error(
-      "OV: Supabase no está disponible."
+      "OV: el cliente de Supabase no está cargado."
     );
 
-    if (
-      typeof showToast === "function"
-    ) {
-      showToast(
-        "Supabase: revisar configuración"
-      );
-    }
+    showToast(
+      "Error: Supabase no cargó"
+    );
 
     return;
   }
@@ -33,112 +24,67 @@ async function checkSupabaseConnection() {
 
   try {
 
-    /*
-      2. Comprobar si OV app
-      tiene una sesión iniciada
-    */
-
     const {
-      data: sessionData,
-      error: sessionError
+      data,
+      error
     } =
       await ovSupabase.auth.getSession();
 
 
-    if (sessionError) {
-      throw sessionError;
-    }
+    if (error) {
 
+      console.error(
+        "OV: error de Supabase Auth",
+        error
+      );
 
-    /*
-      3. Consulta de SOLO LECTURA.
+      showToast(
+        "Error de conexión Supabase"
+      );
 
-      No crea, modifica ni elimina datos.
-
-      Si todavía no hemos iniciado sesión
-      desde OV app, RLS puede devolver
-      cero empresas. Eso es normal.
-    */
-
-    const {
-      data: companyData,
-      error: companyError
-    } =
-      await ovSupabase
-        .from("companies")
-        .select("id,name")
-        .limit(1);
-
-
-    if (companyError) {
-      throw companyError;
+      return;
     }
 
 
     const hasSession =
       Boolean(
-        sessionData?.session
+        data?.session
       );
 
 
-    const visibleCompanies =
-      companyData?.length || 0;
-
-
-    /*
-      4. Resultado técnico
-    */
-
     console.info(
-      "OV Supabase:",
+      "OV SUPABASE OK",
       {
         connected: true,
-        authenticated: hasSession,
-        visibleCompanies:
-          visibleCompanies
+        authenticated: hasSession
       }
     );
 
 
-    /*
-      5. Resultado visible
-    */
+    if (hasSession) {
 
-    if (
-      typeof showToast === "function"
-    ) {
+      showToast(
+        "Supabase conectado"
+      );
 
-      if (hasSession) {
+    } else {
 
-        showToast(
-          "Supabase conectado"
-        );
-
-      } else {
-
-        showToast(
-          "Supabase conectado · falta iniciar sesión"
-        );
-      }
+      showToast(
+        "Supabase conectado · falta iniciar sesión"
+      );
     }
 
 
   } catch (error) {
 
     console.error(
-      "OV: error de conexión con Supabase",
+      "OV: error inesperado",
       error
     );
 
-
-    if (
-      typeof showToast === "function"
-    ) {
-
-      showToast(
-        "Supabase: revisar conexión"
-      );
-    }
+    showToast(
+      "Error de conexión Supabase"
+    );
   }
 }
 
