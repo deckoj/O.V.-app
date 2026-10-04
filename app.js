@@ -2771,9 +2771,7 @@ function showPage(
    AVISOS
 ========================================= */
 
-let toastTimer = null;
-
-function showToast(message) {
+function showToast(message, type = "default") {
 
   const toast =
     document.getElementById(
@@ -2791,8 +2789,37 @@ function showToast(message) {
   toast.textContent =
     message || "Guardado";
 
+
+  /*
+    Limpiar estados anteriores
+  */
+
+  toast.classList.remove(
+    "success",
+    "error"
+  );
+
+
+  /*
+    Aplicar estado visual
+  */
+
+  if (type === "success") {
+    toast.classList.add(
+      "success"
+    );
+  }
+
+  if (type === "error") {
+    toast.classList.add(
+      "error"
+    );
+  }
+
+
   toast.style.display =
     "block";
+
 
   toastTimer =
     setTimeout(
@@ -2801,10 +2828,18 @@ function showToast(message) {
         toast.style.display =
           "none";
 
+        toast.classList.remove(
+          "success",
+          "error"
+        );
+
       },
       1800
     );
 }
+
+
+let toastTimer = null;
 
 
 /* =========================================
