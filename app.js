@@ -3359,28 +3359,6 @@ async function migrateOVLocalDataToSupabase() {
   }
 
 
-  /*
-    2. Evitar una segunda migración
-  */
-
-  const migrationCompleted =
-    localStorage.getItem(
-      "ov_supabase_migration_v1"
-    );
-
-
-  if (
-    migrationCompleted === "completed"
-  ) {
-
-    showToast(
-      "Los datos ya fueron migrados"
-    );
-
-    return;
-  }
-
-
   const userId =
     window.OV_SESSION.user.id;
 
@@ -3391,12 +3369,48 @@ async function migrateOVLocalDataToSupabase() {
   try {
 
     /*
-      3. Buscar ALTOZANO en Supabase
+      2. Obtener datos locales
     */
 
-    let {
-      data: existingClients,
-      error: clientSearchError
+    const localClients =
+      getClients();
+
+    const localProjects =
+      getProjects();
+
+    const localTransactions =
+      transactions || [];
+
+
+    /*
+      3. Localizar ALTOZANO local
+    */
+
+    const localClient =
+      localClients.find(
+        client =>
+          client.name
+            .trim()
+            .toLowerCase() ===
+          "altozano"
+      );
+
+
+    if (!localClient) {
+
+      throw new Error(
+        "No se encontró ALTOZANO local."
+      );
+    }
+
+
+    /*
+      4. Buscar ALTOZANO en Supabase
+    */
+
+    const {
+      data: supabaseClients,
+      error: clientError
     } =
       await ovSupabase
         .from("clients")
@@ -3411,60 +3425,55 @@ async function migrateOVLocalDataToSupabase() {
         );
 
 
-    if (clientSearchError) {
-      throw clientSearchError;
+    if (clientError) {
+      throw clientError;
     }
 
-
-    let clientId;
-
-
-    /*
-      4. Crear ALTOZANO solamente
-      si todavía no existe
-    */
 
     if (
-      existingClients &&
-      existingClients.length > 0
+      !supabaseClients ||
+      supabaseClients.length === 0
     ) {
 
-      clientId =
-        existingClients[0].id;
-
-    } else {
-
-      const {
-        data: newClient,
-        error: clientInsertError
-      } =
-        await ovSupabase
-          .from("clients")
-          .insert({
-            company_id: companyId,
-            name: "ALTOZANO"
-          })
-          .select("id, name")
-          .single();
+      throw new Error(
+        "ALTOZANO no existe en Supabase."
+      );
+    }
 
 
-      if (clientInsertError) {
-        throw clientInsertError;
-      }
+    const supabaseClientId =
+      supabaseClients[0].id;
 
 
-      clientId =
-        newClient.id;
+    /*
+      5. Localizar proyecto lagos local
+    */
+
+    const localProject =
+      localProjects.find(
+        project =>
+          project.name
+            .trim()
+            .toLowerCase() ===
+          "lagos"
+      );
+
+
+    if (!localProject) {
+
+      throw new Error(
+        "No se encontró lagos local."
+      );
     }
 
 
     /*
-      5. Buscar proyecto lagos
+      6. Buscar lagos en Supabase
     */
 
     const {
-      data: existingProjects,
-      error: projectSearchError
+      data: supabaseProjects,
+      error: projectError
     } =
       await ovSupabase
         .from("projects")
@@ -3475,7 +3484,7 @@ async function migrateOVLocalDataToSupabase() {
         )
         .eq(
           "client_id",
-          clientId
+          supabaseClientId
         )
         .eq(
           "name",
@@ -3483,89 +3492,219 @@ async function migrateOVLocalDataToSupabase() {
         );
 
 
-    if (projectSearchError) {
-      throw projectSearchError;
+    if (projectError) {
+      throw projectError;
     }
 
 
-    let projectId;
+    if (
+      !supabaseProjects ||
+      supabaseProjects.length === 0
+    ) {
+
+      throw new Error(
+        "lagos no existe en Supabase."
+      );
+    }
+
+
+    const supabaseProjectId =
+      supabaseProjects[0].id;
 
 
     /*
-      6. Crear lagos solamente
-      si todavía no existe
+      7. Migrar movimientos
     */
 
-    if (
-      existingProjects &&
-      existingProjects.length > 0
+    let migratedCount = 0;
+    let existingCount = 0;
+
+
+    for (
+      const transaction
+      of localTransactions
     ) {
 
-      projectId =
-        existingProjects[0].id;
-
-    } else {
+      /*
+        Evitar duplicados mediante legacy_id
+      */
 
       const {
-        data: newProject,
-        error: projectInsertError
+        data: existingTransactions,
+        error: existingError
       } =
         await ovSupabase
-          .from("projects")
-          .insert({
-            company_id: companyId,
-            client_id: clientId,
-            name: "lagos"
-          })
-          .select("id, name")
-          .single();
+          .from("transactions")
+          .select("id")
+          .eq(
+            "company_id",
+            companyId
+          )
+          .eq(
+            "legacy_id",
+            transaction.id
+          );
 
 
-      if (projectInsertError) {
-        throw projectInsertError;
+      if (existingError) {
+        throw existingError;
       }
 
 
-      projectId =
-        newProject.id;
+      if (
+        existingTransactions &&
+        existingTransactions.length > 0
+      ) {
+
+        existingCount++;
+
+        continue;
+      }
+
+
+      /*
+        Traducir IDs locales
+        a UUID de Supabase
+      */
+
+      let supabaseTransactionClientId =
+        null;
+
+      let supabaseTransactionProjectId =
+        null;
+
+
+      if (
+        transaction.clientId ===
+        localClient.id
+      ) {
+
+        supabaseTransactionClientId =
+          supabaseClientId;
+      }
+
+
+      if (
+        transaction.projectId ===
+        localProject.id
+      ) {
+
+        supabaseTransactionProjectId =
+          supabaseProjectId;
+
+        supabaseTransactionClientId =
+          supabaseClientId;
+      }
+
+
+      /*
+        Insertar movimiento
+      */
+
+      const {
+        error: insertError
+      } =
+        await ovSupabase
+          .from("transactions")
+          .insert({
+
+            company_id:
+              companyId,
+
+            client_id:
+              supabaseTransactionClientId,
+
+            project_id:
+              supabaseTransactionProjectId,
+
+            created_by:
+              userId,
+
+            type:
+              transaction.type,
+
+            amount:
+              transaction.amount,
+
+            currency:
+              transaction.currency ||
+              "MXN",
+
+            concept:
+              transaction.concept,
+
+            category:
+              transaction.category ||
+              null,
+
+            notes:
+              transaction.notes ||
+              null,
+
+            transaction_date:
+              transaction.date ||
+              today(),
+
+            source:
+              transaction.source ||
+              "manual",
+
+            classification_status:
+              transaction.classificationStatus ||
+              "unclassified",
+
+            fiscal_status:
+              transaction.fiscalStatus ||
+              "pending",
+
+            reconciliation_status:
+              transaction.reconciliationStatus ||
+              "pending",
+
+            legacy_id:
+              transaction.id
+          });
+
+
+      if (insertError) {
+        throw insertError;
+      }
+
+
+      migratedCount++;
     }
 
 
     /*
-      7. Guardar referencias de migración.
-
-      TODAVÍA NO MIGRAMOS MOVIMIENTOS.
-
-      Primero comprobaremos que:
-      Grupo Decko → ALTOZANO → lagos
-
-      quedó correctamente creado.
+      8. Marcar migración completa
+      solo después de terminar
     */
 
     localStorage.setItem(
-      "ov_migrated_client_id",
-      clientId
-    );
-
-    localStorage.setItem(
-      "ov_migrated_project_id",
-      projectId
+      "ov_supabase_migration_v1",
+      "completed"
     );
 
 
     console.log(
-      "OV MIGRACIÓN FASE 1 COMPLETA",
+      "OV MIGRACIÓN COMPLETA",
       {
-        companyId,
-        clientId,
-        projectId,
-        userId
+        total:
+          localTransactions.length,
+
+        migrated:
+          migratedCount,
+
+        alreadyExisting:
+          existingCount
       }
     );
 
 
     showToast(
-      "Cliente y proyecto migrados",
+      migratedCount > 0
+        ? `${migratedCount} movimientos migrados`
+        : "Movimientos ya sincronizados",
       "success"
     );
 
@@ -3579,7 +3718,7 @@ async function migrateOVLocalDataToSupabase() {
 
 
     showToast(
-      "Error al migrar datos",
+      "Error al migrar movimientos",
       "error"
     );
   }
