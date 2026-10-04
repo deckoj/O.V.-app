@@ -1,5 +1,5 @@
 /* =========================================
-   OV APP — PRUEBA DE SUPABASE
+   OV APP — SESIÓN Y EMPRESA ACTIVA
    USUARIO → EMPRESA → RLS
 ========================================= */
 
@@ -19,7 +19,7 @@ async function checkSupabaseConnection() {
     );
 
     showToast(
-      "Error: Supabase no cargó"
+      "No se pudo conectar con OV"
     );
 
     return;
@@ -49,17 +49,13 @@ async function checkSupabaseConnection() {
 
 
     /*
-      3. Si todavía no hay sesión
+      3. Sin sesión
     */
 
     if (!session) {
 
       console.info(
-        "OV: Supabase conectado, sin sesión."
-      );
-
-      showToast(
-        "Supabase conectado · falta iniciar sesión"
+        "OV: sin sesión activa."
       );
 
       return;
@@ -67,10 +63,8 @@ async function checkSupabaseConnection() {
 
 
     /*
-      4. Consultar empresas visibles
-      para el usuario autenticado.
-
-      RLS debe decidir cuáles puede ver.
+      4. Obtener empresas disponibles
+      según permisos RLS
     */
 
     const {
@@ -88,64 +82,90 @@ async function checkSupabaseConnection() {
 
 
     /*
-      5. Resultado técnico
+      5. Sin empresa asignada
+    */
+
+    if (
+      !companies ||
+      companies.length === 0
+    ) {
+
+      showToast(
+        "Sesión activa · Sin empresa"
+      );
+
+      return;
+    }
+
+
+    /*
+      6. Empresa activa
+
+      Por ahora usamos la primera empresa
+      disponible para el usuario.
+
+      Más adelante OV permitirá cambiar
+      entre varias empresas.
+    */
+
+    const activeCompany =
+      companies[0];
+
+
+    /*
+      Guardamos temporalmente la empresa
+      obtenida desde Supabase para que
+      otros módulos de OV puedan utilizarla.
+    */
+
+    window.OV_SESSION = {
+      user: session.user,
+      company: activeCompany
+    };
+
+
+    /*
+      7. Resultado técnico
+      Solo visible en consola
     */
 
     console.info(
-      "OV SUPABASE — USUARIO → EMPRESA",
+      "OV — SESIÓN ACTIVA",
       {
-        authenticated: true,
         userId: session.user.id,
-        companies: companies
+        company: activeCompany
       }
     );
 
 
     /*
-      6. Resultado visible
+      8. Mensaje visible
     */
 
-    if (
-      companies &&
-      companies.length > 0
-    ) {
-
-      const companyNames =
-        companies
-          .map(company => company.name)
-          .join(", ");
-
-
-      showToast(
-        "Supabase conectado · " +
-        companyNames
-      );
-
-    } else {
-
-      showToast(
-        "Conectado · sin empresas asignadas"
-      );
-    }
+    showToast(
+      "● Sesión activa · " +
+      activeCompany.name,
+      "success"
+    );
 
 
   } catch (error) {
 
     console.error(
-      "OV: error Usuario → Empresa",
+      "OV: error de sesión/empresa",
       error
     );
 
 
     showToast(
-      "Error al consultar empresas"
+      "No se pudo cargar la empresa"
     );
   }
 }
 
 
 /* =========================================
-   EJECUTAR PRUEBA
+   EJECUTAR SESIÓN
 ========================================= */
 
 checkSupabaseConnection();
