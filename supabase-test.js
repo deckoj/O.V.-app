@@ -122,7 +122,17 @@ async function checkSupabaseConnection() {
       user: session.user,
       company: activeCompany
     };
+     
+/*
+  MIGRACIÓN LOCAL → SUPABASE
+  Ejecutar únicamente si la función existe.
+*/
 
+if (
+  typeof migrateOVLocalDataToSupabase === "function"
+) {
+  await migrateOVLocalDataToSupabase();
+}
 /*
   7. Sincronizar empresa de Supabase
   con la interfaz de OV
