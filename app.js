@@ -199,23 +199,32 @@ async function loadTransactionsFromSupabase() {
       await ovSupabase
         .from("transactions")
         .select(`
-          id,
-          legacy_id,
-          type,
-          amount,
-          currency,
-          concept,
-          category,
-          notes,
-          transaction_date,
-          source,
-          classification_status,
-          fiscal_status,
-          reconciliation_status,
-          client_id,
-          project_id,
-          created_at
-        `)
+  id,
+  legacy_id,
+  type,
+  amount,
+  currency,
+  concept,
+  category,
+  notes,
+  transaction_date,
+  source,
+  classification_status,
+  fiscal_status,
+  reconciliation_status,
+  client_id,
+  project_id,
+  created_at,
+  clients (
+    id,
+    name
+  ),
+  projects (
+    id,
+    name,
+    client_id
+  )
+`)
         .eq(
           "company_id",
           companyId
@@ -230,7 +239,95 @@ async function loadTransactionsFromSupabase() {
     if (error) {
       throw error;
     }
+const localClients =
+  getClients();
 
+const localProjects =
+  getProjects();
+
+
+const clientIdMap =
+  new Map();
+
+const projectIdMap =
+  new Map();
+
+
+(data || []).forEach(
+  transaction => {
+
+    /*
+      CLIENTE:
+      UUID Supabase → ID local OV
+    */
+
+    if (
+      transaction.client_id &&
+      transaction.clients
+    ) {
+
+      const localClient =
+        localClients.find(
+          client =>
+            client.name
+              .trim()
+              .toLowerCase() ===
+            transaction.clients.name
+              .trim()
+              .toLowerCase()
+        );
+
+      if (localClient) {
+
+        clientIdMap.set(
+          transaction.client_id,
+          localClient.id
+        );
+      }
+    }
+
+
+    /*
+      PROYECTO:
+      UUID Supabase → ID local OV
+    */
+
+    if (
+      transaction.project_id &&
+      transaction.projects
+    ) {
+
+      const mappedClientId =
+        clientIdMap.get(
+          transaction.client_id
+        );
+
+      const localProject =
+        localProjects.find(
+          project =>
+            project.name
+              .trim()
+              .toLowerCase() ===
+              transaction.projects.name
+                .trim()
+                .toLowerCase() &&
+            (
+              !mappedClientId ||
+              project.clientId ===
+                mappedClientId
+            )
+        );
+
+      if (localProject) {
+
+        projectIdMap.set(
+          transaction.project_id,
+          localProject.id
+        );
+      }
+    }
+  }
+);
     const remoteTransactions =
       (data || []).map(
         transaction => ({
@@ -285,10 +382,14 @@ async function loadTransactionsFromSupabase() {
             "pending",
 
           clientId:
-            "",
+  clientIdMap.get(
+    transaction.client_id
+  ) || "",
 
-          projectId:
-            "",
+projectId:
+  projectIdMap.get(
+    transaction.project_id
+  ) || "",
 
           createdAt:
             transaction.created_at
