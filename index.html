@@ -16,425 +16,745 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 
+
 <body>
 
 <header>
-  <div class="logo">OV</div>
+
+  <div class="logo">
+    OV
+  </div>
+
   <div class="subtitle">
     Inteligencia financiera empresarial
   </div>
+
 </header>
 
 
 <main>
 
-  <!-- =========================
-       INICIO
-  ========================== -->
 
-  <section id="home" class="page active">
+<!-- =====================================
+     INICIO
+===================================== -->
 
-    <div class="company">
+<section
+  id="home"
+  class="page active"
+>
 
-      <div>
-        <small>Empresa</small>
-        <h2 id="companyTitle">Grupo Decko</h2>
-      </div>
+  <div class="company">
 
-      <select
-        id="companySelect"
-        onchange="changeCompany()">
+    <div>
+
+      <small>
+        Empresa
+      </small>
+
+      <h2 id="companyTitle">
+        Grupo Decko
+      </h2>
+
+    </div>
+
+
+    <select
+      id="companySelect"
+      onchange="changeCompany()"
+    >
+    </select>
+
+  </div>
+
+
+  <div class="balance">
+
+    <small>
+      Disponible
+    </small>
+
+    <h1 id="balance">
+      $0.00 MXN
+    </h1>
+
+    <div class="monthStatus">
+      ● Flujo actualizado
+    </div>
+
+  </div>
+
+
+  <div class="grid">
+
+
+    <div class="card income">
+
+      <small>
+        Ingresos
+      </small>
+
+      <h2 id="income">
+        $0.00 MXN
+      </h2>
+
+    </div>
+
+
+    <div class="card expense">
+
+      <small>
+        Gastos
+      </small>
+
+      <h2 id="expense">
+        $0.00 MXN
+      </h2>
+
+    </div>
+
+
+  </div>
+
+
+  <h3 class="sectionTitle">
+    Flujo del mes
+  </h3>
+
+
+  <div class="card">
+
+    <small>
+      Resultado
+    </small>
+
+    <h2 id="result">
+      $0.00 MXN
+    </h2>
+
+    <p class="muted">
+      Ingresos menos gastos registrados.
+    </p>
+
+  </div>
+
+
+  <h3 class="sectionTitle">
+    Movimientos recientes
+  </h3>
+
+
+  <div id="recentTransactions">
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================
+     MOVIMIENTOS
+===================================== -->
+
+<section
+  id="movements"
+  class="page"
+>
+
+  <h1>
+    Movimientos
+  </h1>
+
+
+  <p
+    id="movementCompanyText"
+    class="muted"
+  >
+  </p>
+
+
+  <div id="allTransactions">
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================
+     AGREGAR / EDITAR MOVIMIENTO
+===================================== -->
+
+<section
+  id="add"
+  class="page"
+>
+
+
+  <h1 id="movementFormTitle">
+    Agregar movimiento
+  </h1>
+
+
+  <p
+    id="addCompanyText"
+    class="muted"
+  >
+  </p>
+
+
+  <div class="formCard">
+
+
+    <!-- INGRESO / GASTO -->
+
+    <div class="typeSelector">
+
+
+      <button
+        id="incomeBtn"
+        type="button"
+        class="typeButton active"
+        onclick="setType('income')"
+      >
+
+        Ingreso
+
+      </button>
+
+
+      <button
+        id="expenseBtn"
+        type="button"
+        class="typeButton"
+        onclick="setType('expense')"
+      >
+
+        Gasto
+
+      </button>
+
+
+    </div>
+
+
+
+    <!-- MONTO -->
+
+    <div class="field">
+
+      <label for="amount">
+        Monto
+      </label>
+
+
+      <input
+        id="amount"
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        placeholder="$0.00 MXN"
+      >
+
+    </div>
+
+
+
+    <!-- CONCEPTO -->
+
+    <div class="field">
+
+      <label for="concept">
+        Concepto
+      </label>
+
+
+      <input
+        id="concept"
+        type="text"
+        autocomplete="off"
+        placeholder="Ej. Mantenimiento Altozano"
+      >
+
+    </div>
+
+
+
+    <!-- CATEGORÍA -->
+
+    <div class="field">
+
+      <label for="category">
+        Categoría
+      </label>
+
+
+      <select id="category">
+
+        <option>Ventas</option>
+
+        <option>
+          Mantenimiento
+        </option>
+
+        <option>
+          Nómina
+        </option>
+
+        <option>
+          Materiales
+        </option>
+
+        <option>
+          Proveedores
+        </option>
+
+        <option>
+          Transporte
+        </option>
+
+        <option>
+          Impuestos
+        </option>
+
+        <option>
+          Servicios
+        </option>
+
+        <option>
+          Renta
+        </option>
+
+        <option>
+          Marketing
+        </option>
+
+        <option>
+          Equipos
+        </option>
+
+        <option>
+          Otros
+        </option>
+
       </select>
 
     </div>
 
 
-    <div class="balance">
 
-      <small>Disponible</small>
+    <!-- FECHA -->
 
-      <h1 id="balance">
-        $0.00 MXN
-      </h1>
+    <div class="field">
 
-      <div class="monthStatus">
-        ● Flujo actualizado
-      </div>
-
-    </div>
-
-
-    <div class="grid">
-
-      <div class="card income">
-
-        <small>Ingresos</small>
-
-        <h2 id="income">
-          $0.00 MXN
-        </h2>
-
-      </div>
-
-
-      <div class="card expense">
-
-        <small>Gastos</small>
-
-        <h2 id="expense">
-          $0.00 MXN
-        </h2>
-
-      </div>
-
-    </div>
-
-
-    <h3 class="sectionTitle">
-      Flujo del mes
-    </h3>
-
-
-    <div class="card">
-
-      <small>Resultado</small>
-
-      <h2 id="result">
-        $0.00 MXN
-      </h2>
-
-      <p style="color:#89939f">
-        Ingresos menos gastos registrados.
-      </p>
-
-    </div>
-
-
-    <h3 class="sectionTitle">
-      Movimientos recientes
-    </h3>
-
-    <div id="recentTransactions"></div>
-
-  </section>
-
-
-
-  <!-- =========================
-       MOVIMIENTOS
-  ========================== -->
-
-  <section id="movements" class="page">
-
-    <h1>Movimientos</h1>
-
-    <p
-      id="movementCompanyText"
-      style="color:#89939f">
-    </p>
-
-    <div id="allTransactions"></div>
-
-  </section>
-
-
-
-  <!-- =========================
-       AGREGAR
-  ========================== -->
-
-  <section id="add" class="page">
-
-    <h1>Agregar movimiento</h1>
-
-    <p
-      id="addCompanyText"
-      style="color:#89939f">
-    </p>
-
-
-    <div class="formCard">
-
-
-      <div class="typeSelector">
-
-        <button
-          id="incomeBtn"
-          class="typeButton active"
-          onclick="setType('income')">
-          Ingreso
-        </button>
-
-        <button
-          id="expenseBtn"
-          class="typeButton"
-          onclick="setType('expense')">
-          Gasto
-        </button>
-
-      </div>
-
-
-      <div class="field">
-
-        <label>Monto</label>
-
-        <input
-          id="amount"
-          type="number"
-          inputmode="decimal"
-          step="0.01"
-          placeholder="$0.00 MXN"
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label>Concepto</label>
-
-        <input
-          id="concept"
-          placeholder="Ej. Mantenimiento Altozano"
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label>Categoría</label>
-
-        <select id="category">
-
-          <option>Ventas</option>
-          <option>Mantenimiento</option>
-          <option>Nómina</option>
-          <option>Materiales</option>
-          <option>Proveedores</option>
-          <option>Transporte</option>
-          <option>Impuestos</option>
-          <option>Servicios</option>
-          <option>Renta</option>
-          <option>Marketing</option>
-          <option>Equipos</option>
-          <option>Otros</option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label>Fecha</label>
-
-        <input
-          id="date"
-          type="date"
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label>Notas</label>
-
-        <textarea
-          id="notes"
-          rows="3"
-          placeholder="Información adicional (opcional)">
-        </textarea>
-
-      </div>
-
-
-      <button
-        class="primary"
-        onclick="saveTransaction()">
-
-        Guardar movimiento
-
-      </button>
-
-    </div>
-
-  </section>
-
-
-
-  <!-- =========================
-       FINANCE
-  ========================== -->
-
-  <section id="ai" class="page">
-
-    <h1>Finance</h1>
-
-
-    <div class="aiCard">
-
-      <h2>
-        Tu inteligencia financiera
-      </h2>
-
-      <p id="aiCompanyText"></p>
+      <label for="date">
+        Fecha
+      </label>
 
 
       <input
-        id="aiQuestion"
-        placeholder="Ej. ¿Cuánto hemos gastado este mes?"
+        id="date"
+        type="date"
       >
 
-
-      <button
-        class="primary"
-        style="
-          margin-top:12px;
-          background:white;
-          color:#111820
-        "
-        onclick="askOV()">
-
-        Preguntar a Finance
-
-      </button>
-
-
-      <div
-        id="aiAnswer"
-        class="aiAnswer">
-      </div>
-
     </div>
 
-  </section>
 
 
+    <!-- NOTAS -->
 
-  <!-- =========================
-       MÁS
-  ========================== -->
+    <div class="field">
 
-  <section id="more" class="page">
-
-    <h1>Más</h1>
+      <label for="notes">
+        Notas
+      </label>
 
 
-    <div class="card">
-
-      <strong>
-        Empresa actual
-      </strong>
-
-      <p id="moreCompanyName"></p>
+      <textarea
+        id="notes"
+        rows="3"
+        placeholder="Información adicional (opcional)"
+      ></textarea>
 
     </div>
 
 
-    <h3 class="sectionTitle">
-      Empresas
-    </h3>
+
+    <!-- GUARDAR -->
+
+    <button
+      id="saveMovementButton"
+      type="button"
+      class="primary"
+      onclick="saveTransaction()"
+    >
+
+      Guardar movimiento
+
+    </button>
 
 
-    <div id="companyList"></div>
+
+    <!-- CANCELAR EDICIÓN -->
+
+    <button
+      id="cancelEditButton"
+      type="button"
+      class="secondary hidden"
+      onclick="cancelEdit()"
+    >
+
+      Cancelar
+
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================
+     FINANCE
+===================================== -->
+
+<section
+  id="ai"
+  class="page"
+>
+
+
+  <h1>
+    Finance
+  </h1>
+
+
+  <div class="aiCard">
+
+
+    <div class="financeLabel">
+      FINANCE
+    </div>
+
+
+    <h2>
+      Tu inteligencia financiera
+    </h2>
+
+
+    <p id="aiCompanyText">
+    </p>
+
+
+    <input
+      id="aiQuestion"
+      type="text"
+      autocomplete="off"
+      placeholder="Ej. ¿Cuánto hemos gastado este mes?"
+    >
 
 
     <button
-      class="primary"
-      onclick="createCompany()">
+      type="button"
+      class="primary aiButton"
+      onclick="askOV()"
+    >
 
-      ＋ Crear nueva empresa
+      Preguntar a Finance
 
     </button>
 
 
     <div
-      class="card"
-      style="margin-top:20px">
-
-      <strong>OV</strong>
-
-      <p style="color:#89939f">
-        Versión MVP 0.4
-      </p>
-
+      id="aiAnswer"
+      class="aiAnswer"
+    >
     </div>
 
-  </section>
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================
+     MÁS
+===================================== -->
+
+<section
+  id="more"
+  class="page"
+>
+
+
+  <h1>
+    Más
+  </h1>
+
+
+  <div class="card">
+
+
+    <strong>
+      Empresa actual
+    </strong>
+
+
+    <p id="moreCompanyName">
+    </p>
+
+
+  </div>
+
+
+
+  <h3 class="sectionTitle">
+    Empresas
+  </h3>
+
+
+  <div id="companyList">
+  </div>
+
+
+
+  <button
+    type="button"
+    class="primary"
+    onclick="createCompany()"
+  >
+
+    ＋ Crear nueva empresa
+
+  </button>
+
+
+
+  <div class="card versionCard">
+
+    <strong>
+      OV
+    </strong>
+
+    <p class="muted">
+      Versión MVP 0.5
+    </p>
+
+  </div>
+
+
+</section>
+
 
 </main>
 
 
 
-<!-- =========================
+<!-- =====================================
      NAVEGACIÓN
-========================== -->
+===================================== -->
 
 <nav>
 
-  <button
-    class="navItem active"
-    onclick="showPage('home',this)">
 
-    <span class="navIcon">⌂</span>
+  <button
+    type="button"
+    class="navItem active"
+    onclick="showPage('home', this)"
+  >
+
+    <span class="navIcon">
+      ⌂
+    </span>
+
     Inicio
 
   </button>
 
 
-  <button
-    class="navItem"
-    onclick="showPage('movements',this)">
 
-    <span class="navIcon">↕</span>
+  <button
+    type="button"
+    class="navItem"
+    onclick="showPage('movements', this)"
+  >
+
+    <span class="navIcon">
+      ↕
+    </span>
+
     Movimientos
 
   </button>
 
 
-  <button
-    class="navItem"
-    onclick="showPage('add',this)">
 
-    <span class="navIcon">＋</span>
+  <button
+    type="button"
+    class="navItem"
+    onclick="openNewMovement(this)"
+  >
+
+    <span class="navIcon">
+      ＋
+    </span>
+
     Agregar
 
   </button>
 
 
-  <button
-    class="navItem"
-    onclick="showPage('ai',this)">
 
-    <span class="navIcon">◎</span>
+  <button
+    type="button"
+    class="navItem"
+    onclick="showPage('ai', this)"
+  >
+
+    <span class="navIcon">
+      ◎
+    </span>
+
     Finance
 
   </button>
 
 
-  <button
-    class="navItem"
-    onclick="showPage('more',this)">
 
-    <span class="navIcon">☰</span>
+  <button
+    type="button"
+    class="navItem"
+    onclick="showPage('more', this)"
+  >
+
+    <span class="navIcon">
+      ☰
+    </span>
+
     Más
 
   </button>
 
+
 </nav>
 
 
+
+<!-- =====================================
+     MENÚ DEL MOVIMIENTO
+===================================== -->
+
 <div
-  id="toast"
-  class="toast">
+  id="transactionOverlay"
+  class="overlay hidden"
+  onclick="closeTransactionMenu(event)"
+>
+
+
+  <div
+    class="actionSheet"
+    onclick="event.stopPropagation()"
+  >
+
+
+    <div class="actionSheetHandle">
+    </div>
+
+
+
+    <div class="actionSheetHeader">
+
+
+      <small>
+        Movimiento
+      </small>
+
+
+      <strong id="menuTransactionConcept">
+        Movimiento
+      </strong>
+
+
+      <span id="menuTransactionAmount">
+        $0.00 MXN
+      </span>
+
+
+    </div>
+
+
+
+    <!-- EDITAR -->
+
+    <button
+      type="button"
+      class="sheetButton"
+      onclick="editSelectedTransaction()"
+    >
+
+      Editar movimiento
+
+    </button>
+
+
+
+    <!-- ELIMINAR -->
+
+    <button
+      type="button"
+      class="sheetButton dangerText"
+      onclick="deleteSelectedTransaction()"
+    >
+
+      Eliminar movimiento
+
+    </button>
+
+
+
+    <!-- CANCELAR -->
+
+    <button
+      type="button"
+      class="sheetButton cancelSheet"
+      onclick="closeTransactionMenu()"
+    >
+
+      Cancelar
+
+    </button>
+
+
+  </div>
+
+
 </div>
 
 
-<!-- CEREBRO DE OV -->
+
+<!-- =====================================
+     AVISOS
+===================================== -->
+
+<div
+  id="toast"
+  class="toast"
+>
+</div>
+
+
+
+<!-- =====================================
+     CEREBRO DE OV
+===================================== -->
+
 <script src="app.js"></script>
 
+
 </body>
+
 </html>
