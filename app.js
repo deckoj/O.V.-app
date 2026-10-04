@@ -1,8 +1,5 @@
 let transactionType = "income";
-
-/* ==============================
-   OV — CONFIGURACIÓN
-================================ */
+let editingTransactionId = null;
 
 const OV_CONFIG = {
   defaultCurrency: "MXN",
@@ -126,10 +123,9 @@ function getAmountValue() {
 
   if (!input) return 0;
 
-  const clean =
-    cleanAmount(input.value);
-
-  return Number(clean) || 0;
+  return Number(
+    cleanAmount(input.value)
+  ) || 0;
 }
 
 
@@ -169,14 +165,9 @@ function formatAmountInput(value) {
   if (clean.includes(".")) {
 
     decimalPart =
-      (decimalPart || "")
-        .slice(0, 2);
+      (decimalPart || "").slice(0, 2);
 
-    return (
-      formattedInteger +
-      "." +
-      decimalPart
-    );
+    return `${formattedInteger}.${decimalPart}`;
   }
 
   return formattedInteger;
@@ -190,123 +181,75 @@ function setupAmountInput() {
 
   if (!input) return;
 
-  /*
-    Necesitamos texto para poder mostrar:
-    1,000
-    y después:
-    $1,000.00 MXN
-  */
-
   input.type = "text";
   input.inputMode = "decimal";
   input.autocomplete = "off";
 
+  input.addEventListener("input", () => {
 
-  /*
-    MIENTRAS ESCRIBES
+    input.value =
+      formatAmountInput(input.value);
 
-    1000
-    se convierte inmediatamente en
-    1,000
-  */
+    const end =
+      input.value.length;
 
-  input.addEventListener(
-    "input",
-    function () {
+    try {
+      input.setSelectionRange(end, end);
+    } catch (error) {}
+  });
 
-      const formatted =
-        formatAmountInput(input.value);
 
-      input.value = formatted;
+  /* Al salir: $180,000.00 MXN */
+
+  input.addEventListener("blur", () => {
+
+    const value =
+      getAmountValue();
+
+    if (!value) {
+      input.value = "";
+      return;
+    }
+
+    input.value =
+      money(value);
+  });
+
+
+  /* Al regresar: 180,000 */
+
+  input.addEventListener("focus", () => {
+
+    const value =
+      getAmountValue();
+
+    if (!value) {
+      input.value = "";
+      return;
+    }
+
+    let editable =
+      value.toFixed(2);
+
+    if (editable.endsWith(".00")) {
+      editable =
+        editable.slice(0, -3);
+    }
+
+    input.value =
+      formatAmountInput(editable);
+
+    setTimeout(() => {
 
       const end =
         input.value.length;
 
       try {
         input.setSelectionRange(end, end);
-      } catch (error) {
-        // Algunos navegadores móviles pueden ignorarlo.
-      }
-    }
-  );
+      } catch (error) {}
 
-
-  /*
-    CUANDO SALES DEL CAMPO
-
-    1,000
-    se convierte en
-    $1,000.00 MXN
-  */
-
-  input.addEventListener(
-    "blur",
-    function () {
-
-      const value =
-        getAmountValue();
-
-      if (!value) {
-        input.value = "";
-        return;
-      }
-
-      input.value =
-        money(value);
-    }
-  );
-
-
-  /*
-    CUANDO REGRESAS A EDITAR
-
-    $1,000.00 MXN
-    vuelve a
-    1,000
-
-    Si hay centavos reales:
-    $1,000.50 MXN
-    vuelve a
-    1,000.50
-  */
-
-  input.addEventListener(
-    "focus",
-    function () {
-
-      const value =
-        getAmountValue();
-
-      if (!value) {
-        input.value = "";
-        return;
-      }
-
-      let editable =
-        value.toFixed(2);
-
-      if (editable.endsWith(".00")) {
-        editable =
-          editable.slice(0, -3);
-      }
-
-      input.value =
-        formatAmountInput(editable);
-
-      setTimeout(() => {
-
-        const end =
-          input.value.length;
-
-        try {
-          input.setSelectionRange(end, end);
-        } catch (error) {
-          // Sin acción necesaria.
-        }
-
-      }, 0);
-    }
-  );
+    }, 0);
+  });
 }
 
 
@@ -334,7 +277,7 @@ function saveData() {
 
 
 /* ==============================
-   SELECTOR DE EMPRESA
+   SELECTOR EMPRESA
 ================================ */
 
 function renderCompanySelector() {
@@ -357,9 +300,8 @@ function renderCompanySelector() {
     option.textContent =
       company.name;
 
-    if (company.id === activeCompanyId) {
-      option.selected = true;
-    }
+    option.selected =
+      company.id === activeCompanyId;
 
     select.appendChild(option);
   });
@@ -370,6 +312,8 @@ function changeCompany() {
 
   activeCompanyId =
     document.getElementById("companySelect").value;
+
+  cancelEdit(false);
 
   saveData();
   updateCompanyUI();
@@ -386,9 +330,7 @@ function changeCompany() {
 function createCompany() {
 
   const name =
-    prompt(
-      "¿Cómo se llama la nueva empresa?"
-    );
+    prompt("¿Cómo se llama la nueva empresa?");
 
   if (!name) return;
 
@@ -451,9 +393,7 @@ function deleteCompany(id) {
   }
 
   const company =
-    companies.find(
-      company => company.id === id
-    );
+    companies.find(c => c.id === id);
 
   if (!company) return;
 
@@ -466,9 +406,7 @@ function deleteCompany(id) {
   if (!confirmed) return;
 
   companies =
-    companies.filter(
-      company => company.id !== id
-    );
+    companies.filter(c => c.id !== id);
 
   delete companyTransactions[id];
 
@@ -487,15 +425,13 @@ function deleteCompany(id) {
 
 
 /* ==============================
-   LISTA DE EMPRESAS
+   LISTA EMPRESAS
 ================================ */
 
 function renderCompanyList() {
 
   const container =
-    document.getElementById(
-      "companyList"
-    );
+    document.getElementById("companyList");
 
   if (!container) return;
 
@@ -541,10 +477,7 @@ function renderCompanyList() {
     const right =
       document.createElement("div");
 
-    if (
-      company.id ===
-      activeCompanyId
-    ) {
+    if (company.id === activeCompanyId) {
 
       const current =
         document.createElement("small");
@@ -566,8 +499,7 @@ function renderCompanyList() {
         "Eliminar";
 
       button.onclick =
-        () =>
-          deleteCompany(company.id);
+        () => deleteCompany(company.id);
 
       right.appendChild(button);
     }
@@ -581,7 +513,7 @@ function renderCompanyList() {
 
 
 /* ==============================
-   INTERFAZ EMPRESA
+   UI EMPRESA
 ================================ */
 
 function updateCompanyUI() {
@@ -603,7 +535,9 @@ function updateCompanyUI() {
 
   setText(
     "addCompanyText",
-    `Registrando movimiento en ${company.name} · ${getCurrency()}.`
+    editingTransactionId
+      ? `Editando movimiento de ${company.name} · ${getCurrency()}.`
+      : `Registrando movimiento en ${company.name} · ${getCurrency()}.`
   );
 
   setText(
@@ -632,28 +566,19 @@ function calculate() {
   let income = 0;
   let expense = 0;
 
-  transactions.forEach(
-    transaction => {
+  transactions.forEach(transaction => {
 
-      if (
-        transaction.type ===
-        "income"
-      ) {
+    if (transaction.type === "income") {
 
-        income +=
-          Number(
-            transaction.amount
-          );
+      income +=
+        Number(transaction.amount);
 
-      } else {
+    } else {
 
-        expense +=
-          Number(
-            transaction.amount
-          );
-      }
+      expense +=
+        Number(transaction.amount);
     }
-  );
+  });
 
   const balance =
     income - expense;
@@ -692,21 +617,15 @@ function renderTransactions() {
     getTransactions();
 
   const sorted =
-    [...transactions]
-      .sort(
-        (a, b) =>
-          b.id - a.id
-      );
+    [...transactions].sort(
+      (a, b) => b.id - a.id
+    );
 
   const recent =
-    document.getElementById(
-      "recentTransactions"
-    );
+    document.getElementById("recentTransactions");
 
   const all =
-    document.getElementById(
-      "allTransactions"
-    );
+    document.getElementById("allTransactions");
 
   if (!recent || !all) return;
 
@@ -720,78 +639,377 @@ function renderTransactions() {
       'Aún no hay movimientos en esta empresa.' +
       '</div>';
 
-    recent.innerHTML =
-      empty;
-
-    all.innerHTML =
-      empty;
+    recent.innerHTML = empty;
+    all.innerHTML = empty;
 
     return;
   }
 
-  sorted.forEach(
-    (transaction, index) => {
+  sorted.forEach((transaction, index) => {
 
-      const sign =
-        transaction.type ===
-        "income"
-          ? "+"
-          : "-";
+    const sign =
+      transaction.type === "income"
+        ? "+"
+        : "-";
 
-      const amountClass =
-        transaction.type ===
-        "income"
-          ? "amountIncome"
-          : "amountExpense";
+    const amountClass =
+      transaction.type === "income"
+        ? "amountIncome"
+        : "amountExpense";
 
-      const html = `
-        <div class="transaction">
 
-          <div>
+    /*
+      El botón ⋯ abre las opciones
+      Editar / Eliminar
+    */
 
-            <strong>
-              ${escapeHTML(
-                transaction.concept
-              )}
-            </strong>
+    const html = `
+      <div class="transaction">
 
-            <br>
+        <div style="flex:1;min-width:0">
 
-            <small>
-              ${escapeHTML(
-                transaction.category
-              )}
-              ·
-              ${formatDate(
-                transaction.date
-              )}
-            </small>
+          <strong>
+            ${escapeHTML(transaction.concept)}
+          </strong>
 
-          </div>
+          <br>
 
-          <div class="${amountClass}">
-            ${sign}${money(
-              transaction.amount
-            )}
-          </div>
+          <small>
+            ${escapeHTML(transaction.category)}
+            ·
+            ${formatDate(transaction.date)}
+          </small>
 
         </div>
-      `;
 
-      all.innerHTML +=
-        html;
 
-      if (index < 3) {
-        recent.innerHTML +=
-          html;
-      }
+        <div style="
+          display:flex;
+          align-items:center;
+          gap:8px;
+        ">
+
+          <div class="${amountClass}">
+            ${sign}${money(transaction.amount)}
+          </div>
+
+          <button
+            onclick="openTransactionMenu(${transaction.id})"
+            aria-label="Opciones del movimiento"
+            style="
+              border:0;
+              background:#eef1f4;
+              width:34px;
+              height:34px;
+              border-radius:10px;
+              font-size:20px;
+              line-height:20px;
+              color:#17212b;
+              cursor:pointer;
+            ">
+            ⋯
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    all.innerHTML += html;
+
+    if (index < 3) {
+      recent.innerHTML += html;
     }
+  });
+}
+
+
+/* ==============================
+   MENÚ MOVIMIENTO
+================================ */
+
+function openTransactionMenu(id) {
+
+  const transaction =
+    getTransactions()
+      .find(
+        transaction =>
+          transaction.id === id
+      );
+
+  if (!transaction) return;
+
+  const choice =
+    prompt(
+      `${transaction.concept}\n` +
+      `${money(transaction.amount)}\n\n` +
+      `Escribe:\n` +
+      `1 para EDITAR\n` +
+      `2 para ELIMINAR\n` +
+      `0 para CANCELAR`
+    );
+
+  if (choice === "1") {
+
+    editTransaction(id);
+
+  } else if (choice === "2") {
+
+    deleteTransaction(id);
+  }
+}
+
+
+/* ==============================
+   EDITAR MOVIMIENTO
+================================ */
+
+function editTransaction(id) {
+
+  const transaction =
+    getTransactions()
+      .find(
+        transaction =>
+          transaction.id === id
+      );
+
+  if (!transaction) return;
+
+  editingTransactionId =
+    id;
+
+  setType(
+    transaction.type
+  );
+
+  const amountInput =
+    document.getElementById("amount");
+
+  amountInput.value =
+    money(transaction.amount);
+
+  document
+    .getElementById("concept")
+    .value =
+      transaction.concept || "";
+
+  document
+    .getElementById("category")
+    .value =
+      transaction.category || "Otros";
+
+  document
+    .getElementById("date")
+    .value =
+      transaction.date ||
+      today();
+
+  document
+    .getElementById("notes")
+    .value =
+      transaction.notes || "";
+
+  updateCompanyUI();
+
+  updateSaveButton();
+
+  showPage(
+    "add",
+    document.querySelectorAll(".navItem")[2]
+  );
+
+  showToast(
+    "Editando movimiento"
   );
 }
 
 
 /* ==============================
-   TIPO DE MOVIMIENTO
+   ELIMINAR MOVIMIENTO
+================================ */
+
+function deleteTransaction(id) {
+
+  const transactions =
+    getTransactions();
+
+  const transaction =
+    transactions.find(
+      transaction =>
+        transaction.id === id
+    );
+
+  if (!transaction) return;
+
+  const confirmed =
+    confirm(
+      `¿Eliminar este movimiento?\n\n` +
+      `${transaction.concept}\n` +
+      `${money(transaction.amount)}\n\n` +
+      `Esta acción no se puede deshacer.`
+    );
+
+  if (!confirmed) return;
+
+  companyTransactions[activeCompanyId] =
+    transactions.filter(
+      transaction =>
+        transaction.id !== id
+    );
+
+  if (editingTransactionId === id) {
+    cancelEdit(false);
+  }
+
+  saveData();
+  calculate();
+  renderCompanyList();
+
+  showToast(
+    "Movimiento eliminado"
+  );
+}
+
+
+/* ==============================
+   CANCELAR EDICIÓN
+================================ */
+
+function cancelEdit(showMessage = true) {
+
+  editingTransactionId =
+    null;
+
+  clearMovementForm();
+
+  setType("income");
+
+  updateSaveButton();
+
+  updateCompanyUI();
+
+  if (showMessage) {
+    showToast("Edición cancelada");
+  }
+}
+
+
+/* ==============================
+   BOTÓN GUARDAR
+================================ */
+
+function updateSaveButton() {
+
+  const button =
+    document.querySelector(
+      "#add .primary"
+    );
+
+  if (!button) return;
+
+  if (editingTransactionId) {
+
+    button.textContent =
+      "Guardar cambios";
+
+  } else {
+
+    button.textContent =
+      "Guardar movimiento";
+  }
+
+
+  /*
+    Creamos automáticamente
+    un botón Cancelar cuando
+    estamos editando.
+  */
+
+  let cancelButton =
+    document.getElementById(
+      "cancelEditButton"
+    );
+
+  if (editingTransactionId) {
+
+    if (!cancelButton) {
+
+      cancelButton =
+        document.createElement(
+          "button"
+        );
+
+      cancelButton.id =
+        "cancelEditButton";
+
+      cancelButton.type =
+        "button";
+
+      cancelButton.className =
+        "secondary";
+
+      cancelButton.textContent =
+        "Cancelar edición";
+
+      cancelButton.style.marginTop =
+        "10px";
+
+      cancelButton.onclick =
+        () => cancelEdit();
+
+      button.insertAdjacentElement(
+        "afterend",
+        cancelButton
+      );
+    }
+
+  } else {
+
+    if (cancelButton) {
+      cancelButton.remove();
+    }
+  }
+}
+
+
+/* ==============================
+   LIMPIAR FORMULARIO
+================================ */
+
+function clearMovementForm() {
+
+  const amount =
+    document.getElementById("amount");
+
+  const concept =
+    document.getElementById("concept");
+
+  const notes =
+    document.getElementById("notes");
+
+  const date =
+    document.getElementById("date");
+
+  if (amount) {
+    amount.value = "";
+  }
+
+  if (concept) {
+    concept.value = "";
+  }
+
+  if (notes) {
+    notes.value = "";
+  }
+
+  if (date) {
+    date.value = today();
+  }
+}
+
+
+/* ==============================
+   TIPO MOVIMIENTO
 ================================ */
 
 function setType(type) {
@@ -828,7 +1046,7 @@ function setType(type) {
 
 
 /* ==============================
-   GUARDAR MOVIMIENTO
+   GUARDAR / ACTUALIZAR
 ================================ */
 
 function saveTransaction() {
@@ -858,10 +1076,8 @@ function saveTransaction() {
       .value
       .trim();
 
-  if (
-    !amount ||
-    amount <= 0
-  ) {
+
+  if (!amount || amount <= 0) {
 
     alert(
       "Ingresa un monto válido."
@@ -869,6 +1085,7 @@ function saveTransaction() {
 
     return;
   }
+
 
   if (!concept) {
 
@@ -879,79 +1096,134 @@ function saveTransaction() {
     return;
   }
 
+
   const transactions =
     getTransactions();
 
-  transactions.push({
 
-    id: Date.now(),
+  /*
+    SI ESTAMOS EDITANDO
+  */
 
-    type:
-      transactionType,
+  if (editingTransactionId) {
 
-    amount,
+    const transaction =
+      transactions.find(
+        transaction =>
+          transaction.id ===
+          editingTransactionId
+      );
 
-    currency:
-      getCurrency(),
+    if (!transaction) {
 
-    concept,
+      alert(
+        "No se encontró el movimiento."
+      );
 
-    category,
+      return;
+    }
+
+    transaction.type =
+      transactionType;
+
+    transaction.amount =
+      amount;
+
+    transaction.currency =
+      getCurrency();
+
+    transaction.concept =
+      concept;
+
+    transaction.category =
+      category;
+
+    transaction.date =
+      date || today();
+
+    transaction.notes =
+      notes;
+
+    transaction.updatedAt =
+      Date.now();
+
+    editingTransactionId =
+      null;
+
+    showToast(
+      "Movimiento actualizado"
+    );
+
+  } else {
 
     /*
-      Estos campos preparan OV
-      para Finance.
+      MOVIMIENTO NUEVO
     */
 
-    client: "",
+    transactions.push({
 
-    project: "",
+      id: Date.now(),
 
-    source:
-      "manual",
+      type:
+        transactionType,
 
-    classificationStatus:
-      "manual",
+      amount,
 
-    date:
-      date ||
-      new Date()
-        .toISOString()
-        .slice(0, 10),
+      currency:
+        getCurrency(),
 
-    notes
-  });
+      concept,
+
+      category,
+
+      client: "",
+
+      project: "",
+
+      source:
+        "manual",
+
+      classificationStatus:
+        "manual",
+
+      date:
+        date || today(),
+
+      notes,
+
+      createdAt:
+        Date.now()
+    });
+
+    showToast(
+      "Movimiento guardado"
+    );
+  }
+
 
   companyTransactions[
     activeCompanyId
   ] = transactions;
 
   saveData();
+
+  clearMovementForm();
+
+  setType("income");
+
+  updateSaveButton();
+
+  updateCompanyUI();
+
   calculate();
+
   renderCompanyList();
-
-  document
-    .getElementById("amount")
-    .value = "";
-
-  document
-    .getElementById("concept")
-    .value = "";
-
-  document
-    .getElementById("notes")
-    .value = "";
-
-  showToast(
-    "Movimiento guardado"
-  );
 
   showPage(
     "home",
-    document
-      .querySelectorAll(
-        ".navItem"
-      )[0]
+    document.querySelectorAll(
+      ".navItem"
+    )[0]
   );
 }
 
@@ -960,10 +1232,7 @@ function saveTransaction() {
    NAVEGACIÓN
 ================================ */
 
-function showPage(
-  page,
-  button
-) {
+function showPage(page, button) {
 
   document
     .querySelectorAll(".page")
@@ -975,20 +1244,16 @@ function showPage(
     );
 
   const selectedPage =
-    document
-      .getElementById(page);
+    document.getElementById(page);
 
   if (selectedPage) {
-
     selectedPage
       .classList
       .add("active");
   }
 
   document
-    .querySelectorAll(
-      ".navItem"
-    )
+    .querySelectorAll(".navItem")
     .forEach(
       element =>
         element
@@ -1006,10 +1271,7 @@ function showPage(
     renderCompanyList();
   }
 
-  window.scrollTo(
-    0,
-    0
-  );
+  window.scrollTo(0, 0);
 }
 
 
@@ -1020,43 +1282,37 @@ function showPage(
 function showToast(message) {
 
   const toast =
-    document
-      .getElementById(
-        "toast"
-      );
+    document.getElementById(
+      "toast"
+    );
 
   if (!toast) return;
 
   toast.textContent =
-    message ||
-    "Guardado";
+    message || "Guardado";
 
   toast.style.display =
     "block";
 
-  setTimeout(
-    () => {
+  setTimeout(() => {
 
-      toast.style.display =
-        "none";
+    toast.style.display =
+      "none";
 
-    },
-    1800
-  );
+  }, 1800);
 }
 
 
 /* ==============================
-   FINANCE — PROTOTIPO LOCAL
+   FINANCE
 ================================ */
 
 function askOV() {
 
   const input =
-    document
-      .getElementById(
-        "aiQuestion"
-      );
+    document.getElementById(
+      "aiQuestion"
+    );
 
   if (!input) return;
 
@@ -1098,10 +1354,9 @@ function askOV() {
 
   let response;
 
+
   if (
-    question.includes(
-      "gasto"
-    )
+    question.includes("gasto")
   ) {
 
     response =
@@ -1109,13 +1364,11 @@ function askOV() {
       `${money(expense)} ` +
       `registrados en gastos.`;
 
-  } else if (
-    question.includes(
-      "ingreso"
-    ) ||
-    question.includes(
-      "venta"
-    )
+  }
+
+  else if (
+    question.includes("ingreso") ||
+    question.includes("venta")
   ) {
 
     response =
@@ -1123,16 +1376,12 @@ function askOV() {
       `${money(income)} ` +
       `registrados en ingresos.`;
 
-  } else if (
-    question.includes(
-      "disponible"
-    ) ||
-    question.includes(
-      "saldo"
-    ) ||
-    question.includes(
-      "flujo"
-    )
+  }
+
+  else if (
+    question.includes("disponible") ||
+    question.includes("saldo") ||
+    question.includes("flujo")
   ) {
 
     response =
@@ -1142,7 +1391,9 @@ function askOV() {
         income - expense
       )}.`;
 
-  } else {
+  }
+
+  else {
 
     response =
       `${company.name} tiene ` +
@@ -1155,10 +1406,9 @@ function askOV() {
   }
 
   const box =
-    document
-      .getElementById(
-        "aiAnswer"
-      );
+    document.getElementById(
+      "aiAnswer"
+    );
 
   if (!box) return;
 
@@ -1174,6 +1424,14 @@ function askOV() {
    FECHAS
 ================================ */
 
+function today() {
+
+  return new Date()
+    .toISOString()
+    .slice(0, 10);
+}
+
+
 function formatDate(date) {
 
   if (!date) return "";
@@ -1181,9 +1439,7 @@ function formatDate(date) {
   const parts =
     date.split("-");
 
-  if (
-    parts.length !== 3
-  ) {
+  if (parts.length !== 3) {
     return date;
   }
 
@@ -1196,14 +1452,13 @@ function formatDate(date) {
 
 
 /* ==============================
-   SEGURIDAD / UTILIDADES
+   UTILIDADES
 ================================ */
 
 function escapeHTML(value) {
 
   const div =
-    document
-      .createElement("div");
+    document.createElement("div");
 
   div.textContent =
     value ?? "";
@@ -1212,17 +1467,12 @@ function escapeHTML(value) {
 }
 
 
-function setText(
-  id,
-  value
-) {
+function setText(id, value) {
 
   const element =
-    document
-      .getElementById(id);
+    document.getElementById(id);
 
   if (element) {
-
     element.innerText =
       value;
   }
@@ -1236,17 +1486,13 @@ function setText(
 function initializeOV() {
 
   const dateInput =
-    document
-      .getElementById(
-        "date"
-      );
+    document.getElementById(
+      "date"
+    );
 
   if (dateInput) {
-
     dateInput.value =
-      new Date()
-        .toISOString()
-        .slice(0, 10);
+      today();
   }
 
   setupAmountInput();
@@ -1256,6 +1502,8 @@ function initializeOV() {
   renderCompanySelector();
 
   updateCompanyUI();
+
+  updateSaveButton();
 
   calculate();
 }
