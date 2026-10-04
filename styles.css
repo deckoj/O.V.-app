@@ -1,321 +1,1054 @@
-*{box-sizing:border-box}
+/* =========================================
+   OV — STYLE.CSS
+   MVP 0.4
+========================================= */
 
-:root{
-  --dark:#111820;
-  --bg:#f5f7f9;
-  --card:#fff;
-  --muted:#89939f;
-  --green:#2f8f5b;
-  --red:#c44738;
-  --border:#e7e9ec;
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:var(--bg);
-  color:#17212b;
-  padding-bottom:100px;
+:root {
+  --dark: #111820;
+  --dark-soft: #202a35;
+
+  --bg: #f5f7f9;
+  --card: #ffffff;
+
+  --text: #17212b;
+  --muted: #89939f;
+
+  --green: #2f8f5b;
+  --green-light: #63d494;
+
+  --red: #c44738;
+
+  --border: #e7e9ec;
+
+  --radius: 18px;
 }
 
-header{
-  background:var(--dark);
-  color:white;
-  padding:32px 22px 28px;
+
+/* =========================================
+   GENERAL
+========================================= */
+
+html {
+  background: var(--bg);
 }
 
-.logo{
-  font-size:32px;
-  font-weight:900;
-  letter-spacing:3px;
+body {
+  margin: 0;
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  background: var(--bg);
+  color: var(--text);
+
+  padding-bottom: 105px;
+
+  min-height: 100vh;
 }
 
-.subtitle{
-  margin-top:6px;
-  color:#9fa9b5;
-  font-size:14px;
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
-main{
-  max-width:850px;
-  margin:auto;
-  padding:24px 18px;
+button {
+  cursor: pointer;
 }
 
-.page{display:none}
-.page.active{display:block}
-
-.company{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:15px;
-  margin-bottom:24px;
+h1 {
+  margin-top: 0;
+  font-size: 29px;
+  letter-spacing: -0.7px;
 }
 
-.company small{color:#6f7984}
-
-.company h2{
-  margin:3px 0 0;
-  font-size:25px;
+p {
+  line-height: 1.45;
 }
 
-select,input,textarea{
-  width:100%;
-  border:1px solid #dfe3e7;
-  background:white;
-  padding:14px;
-  border-radius:13px;
-  font-size:16px;
-  font-family:inherit;
+.muted {
+  color: var(--muted);
 }
 
-.company select{
-  width:auto;
-  max-width:52%;
-  font-weight:600;
+.hidden {
+  display: none !important;
 }
 
-.balance{
-  background:var(--dark);
-  color:white;
-  padding:27px;
-  border-radius:23px;
+
+/* =========================================
+   HEADER
+========================================= */
+
+header {
+  background: var(--dark);
+  color: white;
+
+  padding:
+    calc(27px + env(safe-area-inset-top))
+    22px
+    27px;
 }
 
-.balance small{
-  color:#aeb7c2;
-  font-size:15px;
+.logo {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 3px;
 }
 
-.balance h1{
-  margin:10px 0 6px;
-  font-size:39px;
+.subtitle {
+  margin-top: 5px;
+  color: #9fa9b5;
+  font-size: 14px;
 }
 
-.monthStatus{
-  color:#63d494;
-  font-weight:700;
+
+/* =========================================
+   CONTENIDO
+========================================= */
+
+main {
+  width: 100%;
+  max-width: 850px;
+
+  margin: auto;
+
+  padding:
+    24px
+    18px
+    35px;
 }
 
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:14px;
+.page {
+  display: none;
 }
 
-.card{
-  background:white;
-  border-radius:19px;
-  padding:20px;
-  box-shadow:0 3px 12px rgba(0,0,0,.035);
+.page.active {
+  display: block;
 }
 
-.card small{
-  color:var(--muted);
-  font-weight:600;
+
+/* =========================================
+   EMPRESA
+========================================= */
+
+.company {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 24px;
 }
 
-.card h2{margin:8px 0 0}
-
-.income h2{color:var(--green)}
-.expense h2{color:var(--red)}
-
-.sectionTitle{
-  font-size:21px;
-  margin:28px 0 13px;
+.company small {
+  color: #6f7984;
 }
 
-.transaction{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-  background:white;
-  padding:16px;
-  border-radius:14px;
-  margin-bottom:9px;
+.company h2 {
+  margin: 3px 0 0;
+  font-size: 25px;
+  letter-spacing: -0.4px;
 }
 
-.transaction small{color:var(--muted)}
-
-.amountIncome{
-  color:var(--green);
-  font-weight:750;
-  white-space:nowrap;
+.company select {
+  width: auto;
+  max-width: 52%;
+  font-weight: 650;
 }
 
-.amountExpense{
-  color:var(--red);
-  font-weight:750;
-  white-space:nowrap;
+
+/* =========================================
+   INPUTS
+========================================= */
+
+select,
+input,
+textarea {
+  width: 100%;
+
+  border: 1px solid #dfe3e7;
+
+  background: white;
+
+  color: var(--text);
+
+  padding: 14px;
+
+  border-radius: 13px;
+
+  font-size: 16px;
+
+  outline: none;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.empty{
-  background:white;
-  padding:30px 20px;
-  text-align:center;
-  border-radius:18px;
-  color:var(--muted);
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #aab2bb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(17, 24, 32, 0.05);
 }
 
-.formCard{
-  background:white;
-  border-radius:20px;
-  padding:20px;
+textarea {
+  resize: vertical;
 }
 
-.field{margin-bottom:17px}
 
-label{
-  display:block;
-  font-weight:650;
-  margin-bottom:7px;
+/* =========================================
+   SALDO
+========================================= */
+
+.balance {
+  background: var(--dark);
+
+  color: white;
+
+  padding: 27px;
+
+  border-radius: 23px;
+
+  box-shadow:
+    0 8px 22px
+    rgba(17, 24, 32, 0.08);
 }
 
-.typeSelector{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  background:#eef1f4;
-  padding:4px;
-  border-radius:13px;
-  margin-bottom:20px;
+.balance small {
+  color: #aeb7c2;
+  font-size: 15px;
 }
 
-.typeButton{
-  border:0;
-  padding:12px;
-  border-radius:10px;
-  background:transparent;
-  font-weight:700;
-  font-size:15px;
+.balance h1 {
+  margin: 10px 0 6px;
+
+  font-size: 38px;
+
+  letter-spacing: -1.2px;
+
+  overflow-wrap: anywhere;
 }
 
-.typeButton.active{
-  background:var(--dark);
-  color:white;
+.monthStatus {
+  color: var(--green-light);
+
+  font-size: 14px;
+
+  font-weight: 700;
 }
 
-.primary{
-  width:100%;
-  border:0;
-  background:var(--dark);
-  color:white;
-  padding:16px;
-  border-radius:14px;
-  font-size:16px;
-  font-weight:750;
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 12px;
+
+  margin-top: 14px;
 }
 
-.secondary{
-  width:100%;
-  border:1px solid #dfe3e7;
-  background:white;
-  color:#17212b;
-  padding:14px;
-  border-radius:14px;
-  font-size:15px;
-  font-weight:700;
+.card {
+  background: white;
+
+  border-radius: 19px;
+
+  padding: 20px;
+
+  box-shadow:
+    0 3px 12px
+    rgba(0, 0, 0, 0.035);
 }
 
-.danger{
-  width:100%;
-  border:1px solid #f0cbc6;
-  background:#fff;
-  color:var(--red);
-  padding:14px;
-  border-radius:14px;
-  font-size:15px;
-  font-weight:700;
+.card small {
+  color: var(--muted);
+
+  font-weight: 600;
 }
 
-.aiCard{
-  background:var(--dark);
-  color:white;
-  padding:23px;
-  border-radius:21px;
+.card h2 {
+  margin: 8px 0 0;
+
+  overflow-wrap: anywhere;
 }
 
-.aiCard p{color:#aeb7c2}
-.aiCard input{margin-top:10px}
-
-.aiAnswer{
-  margin-top:16px;
-  padding:15px;
-  background:#202a35;
-  border-radius:13px;
-  display:none;
+.income h2 {
+  color: var(--green);
 }
 
-.companyRow{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  background:white;
-  padding:17px;
-  border-radius:15px;
-  margin-bottom:10px;
+.expense h2 {
+  color: var(--red);
 }
 
-.companyRow small{color:var(--muted)}
+.sectionTitle {
+  font-size: 21px;
 
-.deleteButton{
-  border:0;
-  background:#fff1ef;
-  color:var(--red);
-  padding:9px 11px;
-  border-radius:10px;
-  font-weight:700;
+  margin:
+    28px
+    0
+    13px;
 }
 
-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  z-index:20;
-  background:rgba(255,255,255,.96);
-  backdrop-filter:blur(12px);
-  border-top:1px solid #ddd;
-  display:flex;
-  justify-content:space-around;
-  padding:10px 3px calc(12px + env(safe-area-inset-bottom));
+.versionCard {
+  margin-top: 20px;
 }
 
-.navItem{
-  border:0;
-  background:none;
-  color:#7b8490;
-  font-size:11px;
-  font-weight:600;
-  min-width:60px;
+
+/* =========================================
+   MOVIMIENTOS
+========================================= */
+
+.transaction {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 12px;
+
+  background: white;
+
+  padding: 16px;
+
+  border-radius: 15px;
+
+  margin-bottom: 9px;
+
+  box-shadow:
+    0 2px 8px
+    rgba(0, 0, 0, 0.025);
 }
 
-.navIcon{
-  display:block;
-  font-size:20px;
-  height:25px;
+.transactionInfo {
+  flex: 1;
+
+  min-width: 0;
 }
 
-.navItem.active{color:#111820}
+.transactionInfo strong {
+  display: block;
 
-.toast{
-  position:fixed;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:105px;
-  background:#111820;
-  color:white;
-  padding:12px 18px;
-  border-radius:30px;
-  display:none;
-  z-index:50;
-  font-size:14px;
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
 }
 
-@media(max-width:500px){
-  .balance h1{font-size:36px}
-  .card{padding:18px}
+.transactionInfo small {
+  color: var(--muted);
+}
+
+.transactionRight {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.amountIncome,
+.amountExpense {
+  font-weight: 750;
+
+  white-space: nowrap;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.amountIncome {
+  color: var(--green);
+}
+
+.amountExpense {
+  color: var(--red);
+}
+
+
+/* =========================================
+   BOTÓN ⋯
+========================================= */
+
+.transactionMenuButton {
+  border: 0;
+
+  background: #eef1f4;
+
+  color: var(--text);
+
+  width: 38px;
+  height: 38px;
+
+  min-width: 38px;
+
+  border-radius: 11px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  line-height: 1;
+
+  padding: 0;
+}
+
+.transactionMenuButton:active {
+  transform: scale(0.94);
+
+  background: #e3e7eb;
+}
+
+
+/* =========================================
+   VACÍO
+========================================= */
+
+.empty {
+  background: white;
+
+  padding: 30px 20px;
+
+  text-align: center;
+
+  border-radius: 18px;
+
+  color: var(--muted);
+}
+
+
+/* =========================================
+   FORMULARIO
+========================================= */
+
+.formCard {
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 20px;
+
+  box-shadow:
+    0 3px 12px
+    rgba(0, 0, 0, 0.035);
+}
+
+.field {
+  margin-bottom: 17px;
+}
+
+label {
+  display: block;
+
+  font-weight: 650;
+
+  margin-bottom: 7px;
+}
+
+
+/* =========================================
+   INGRESO / GASTO
+========================================= */
+
+.typeSelector {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  background: #eef1f4;
+
+  padding: 4px;
+
+  border-radius: 13px;
+
+  margin-bottom: 20px;
+}
+
+.typeButton {
+  border: 0;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #68727d;
+
+  font-weight: 700;
+
+  font-size: 15px;
+}
+
+.typeButton.active {
+  background: var(--dark);
+
+  color: white;
+
+  box-shadow:
+    0 2px 7px
+    rgba(17, 24, 32, 0.14);
+}
+
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.primary {
+  width: 100%;
+
+  border: 0;
+
+  background: var(--dark);
+
+  color: white;
+
+  padding: 16px;
+
+  border-radius: 14px;
+
+  font-size: 16px;
+
+  font-weight: 750;
+}
+
+.primary:active {
+  transform: scale(0.99);
+}
+
+.secondary {
+  width: 100%;
+
+  border:
+    1px solid
+    #dfe3e7;
+
+  background: white;
+
+  color: var(--text);
+
+  padding: 14px;
+
+  border-radius: 14px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  margin-top: 10px;
+}
+
+.dangerText {
+  color: var(--red) !important;
+}
+
+
+/* =========================================
+   FINANCE
+========================================= */
+
+.aiCard {
+  background: var(--dark);
+
+  color: white;
+
+  padding: 23px;
+
+  border-radius: 21px;
+
+  box-shadow:
+    0 8px 22px
+    rgba(17, 24, 32, 0.08);
+}
+
+.financeLabel {
+  display: inline-block;
+
+  background: rgba(
+    255,
+    255,
+    255,
+    0.1
+  );
+
+  color: #c5ccd4;
+
+  padding:
+    6px
+    9px;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.3px;
+
+  margin-bottom: 4px;
+}
+
+.aiCard h2 {
+  margin-bottom: 5px;
+}
+
+.aiCard p {
+  color: #aeb7c2;
+
+  margin-top: 5px;
+}
+
+.aiCard input {
+  margin-top: 10px;
+}
+
+.aiButton {
+  margin-top: 12px;
+
+  background: white;
+
+  color: var(--dark);
+}
+
+.aiAnswer {
+  margin-top: 16px;
+
+  padding: 15px;
+
+  background: var(--dark-soft);
+
+  border-radius: 13px;
+
+  display: none;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   EMPRESAS
+========================================= */
+
+.companyRow {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 12px;
+
+  background: white;
+
+  padding: 17px;
+
+  border-radius: 15px;
+
+  margin-bottom: 10px;
+}
+
+.companyRow small {
+  color: var(--muted);
+}
+
+.deleteButton {
+  border: 0;
+
+  background: #fff1ef;
+
+  color: var(--red);
+
+  padding:
+    9px
+    11px;
+
+  border-radius: 10px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================
+   NAVEGACIÓN INFERIOR
+========================================= */
+
+nav {
+  position: fixed;
+
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  z-index: 20;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.96
+    );
+
+  -webkit-backdrop-filter:
+    blur(12px);
+
+  backdrop-filter:
+    blur(12px);
+
+  border-top:
+    1px solid
+    #dddddd;
+
+  display: flex;
+
+  justify-content: space-around;
+
+  padding:
+    10px
+    3px
+    calc(
+      12px +
+      env(safe-area-inset-bottom)
+    );
+}
+
+.navItem {
+  border: 0;
+
+  background: none;
+
+  color: #7b8490;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  min-width: 60px;
+
+  padding:
+    2px
+    4px;
+}
+
+.navIcon {
+  display: block;
+
+  font-size: 20px;
+
+  height: 25px;
+}
+
+.navItem.active {
+  color: var(--dark);
+}
+
+
+/* =========================================
+   MENÚ EDITAR / ELIMINAR
+========================================= */
+
+.overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  background:
+    rgba(
+      0,
+      0,
+      0,
+      0.38
+    );
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: center;
+
+  padding:
+    14px
+    14px
+    calc(
+      14px +
+      env(safe-area-inset-bottom)
+    );
+}
+
+.actionSheet {
+  width: 100%;
+
+  max-width: 520px;
+
+  background: var(--bg);
+
+  border-radius: 22px;
+
+  padding:
+    9px
+    9px
+    10px;
+
+  box-shadow:
+    0 15px 50px
+    rgba(0, 0, 0, 0.22);
+
+  animation:
+    sheetUp
+    0.2s ease-out;
+}
+
+@keyframes sheetUp {
+
+  from {
+    transform:
+      translateY(30px);
+
+    opacity: 0;
+  }
+
+  to {
+    transform:
+      translateY(0);
+
+    opacity: 1;
+  }
+}
+
+.actionSheetHandle {
+  width: 40px;
+
+  height: 5px;
+
+  background: #cfd4da;
+
+  border-radius: 100px;
+
+  margin:
+    3px
+    auto
+    12px;
+}
+
+.actionSheetHeader {
+  background: white;
+
+  padding:
+    17px
+    16px;
+
+  border-radius: 15px;
+
+  margin-bottom: 8px;
+}
+
+.actionSheetHeader small {
+  display: block;
+
+  color: var(--muted);
+
+  margin-bottom: 5px;
+}
+
+.actionSheetHeader strong {
+  display: block;
+
+  font-size: 17px;
+
+  margin-bottom: 4px;
+}
+
+.actionSheetHeader span {
+  color: #65707b;
+
+  font-size: 14px;
+}
+
+.sheetButton {
+  width: 100%;
+
+  border: 0;
+
+  background: white;
+
+  color: var(--text);
+
+  padding: 17px;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  margin-bottom: 2px;
+}
+
+.sheetButton:first-of-type {
+  border-radius:
+    15px
+    15px
+    4px
+    4px;
+}
+
+.cancelSheet {
+  margin-top: 8px;
+
+  border-radius: 15px !important;
+}
+
+
+/* =========================================
+   TOAST
+========================================= */
+
+.toast {
+  position: fixed;
+
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  bottom:
+    calc(
+      102px +
+      env(safe-area-inset-bottom)
+    );
+
+  background: var(--dark);
+
+  color: white;
+
+  padding:
+    12px
+    18px;
+
+  border-radius: 30px;
+
+  display: none;
+
+  z-index: 150;
+
+  font-size: 14px;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 5px 18px
+    rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width: 500px) {
+
+  main {
+    padding:
+      21px
+      15px
+      30px;
+  }
+
+  .balance {
+    padding: 24px;
+  }
+
+  .balance h1 {
+    font-size: 34px;
+  }
+
+  .card {
+    padding: 17px;
+  }
+
+  .grid {
+    gap: 10px;
+  }
+
+  .grid .card h2 {
+    font-size: 19px;
+  }
+
+  .transaction {
+    padding:
+      14px
+      12px;
+  }
+
+  .transactionRight {
+    gap: 6px;
+  }
+
+  .amountIncome,
+  .amountExpense {
+    font-size: 14px;
+  }
+
+  .transactionMenuButton {
+    width: 36px;
+    height: 36px;
+
+    min-width: 36px;
+  }
+}
+
+
+/* =========================================
+   PANTALLAS MUY PEQUEÑAS
+========================================= */
+
+@media (max-width: 365px) {
+
+  .balance h1 {
+    font-size: 30px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .navItem {
+    min-width: 52px;
+
+    font-size: 10px;
+  }
 }
