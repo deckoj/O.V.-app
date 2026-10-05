@@ -2683,6 +2683,138 @@ async function deleteProjectFromSupabase(
     return false;
   }
 }
+async function editProject(id) {
+
+  const project =
+    getProjectById(id);
+
+  if (!project) return;
+
+
+  const name =
+    prompt(
+      "Nuevo nombre del proyecto",
+      project.name
+    );
+
+  if (!name) return;
+
+
+  const cleanName =
+    name.trim();
+
+  if (!cleanName) return;
+
+
+  if (
+    cleanName.toLowerCase() ===
+    project.name.toLowerCase()
+  ) {
+    return;
+  }
+
+
+  const duplicate =
+    getProjects().find(
+      item =>
+        String(item.id) !==
+          String(project.id) &&
+        String(item.clientId) ===
+          String(project.clientId) &&
+        item.name.toLowerCase() ===
+          cleanName.toLowerCase()
+    );
+
+
+  if (duplicate) {
+
+    alert(
+      "Ese cliente ya tiene un proyecto con ese nombre."
+    );
+
+    return;
+  }
+
+
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    alert(
+      "No hay una sesión activa."
+    );
+
+    return;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    const remoteProjectId =
+      project.supabaseId ||
+      project.id;
+
+
+    const {
+      error
+    } =
+      await ovSupabase
+        .from("projects")
+        .update({
+          name:
+            cleanName
+        })
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "id",
+          remoteProjectId
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    project.name =
+      cleanName;
+
+    saveData();
+
+    renderClientList();
+    renderProjectSelector();
+
+    console.info(
+      "OV Supabase: proyecto actualizado.",
+      cleanName
+    );
+
+    showToast(
+      "Proyecto actualizado"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al actualizar proyecto:",
+      error
+    );
+
+    alert(
+      "No se pudo actualizar el proyecto."
+    );
+  }
+}
+
 function deleteProject(id) {
 
   const project =
