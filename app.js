@@ -2090,6 +2090,10 @@ editButton.onclick =
             left
           );
 
+           projectRow.appendChild(
+  editButton
+);
+           
           projectRow.appendChild(
             deleteButton
           );
