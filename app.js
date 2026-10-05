@@ -2052,7 +2052,22 @@ actions.appendChild(
           left.appendChild(name);
           left.appendChild(meta);
 
+const editButton =
+  document.createElement(
+    "button"
+  );
 
+editButton.className =
+  "smallButton";
+
+editButton.textContent =
+  "Editar";
+
+editButton.onclick =
+  () =>
+    editProject(
+      project.id
+    );
           const deleteButton =
             document.createElement(
               "button"
