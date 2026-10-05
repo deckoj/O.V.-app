@@ -3595,7 +3595,227 @@ async function saveTransactionToSupabase(
     return false;
   }
 }
+async function updateTransactionInSupabase(
+  transaction
+) {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+    console.warn(
+      "OV Supabase: sesión no disponible para actualizar movimiento."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    let supabaseClientId =
+      null;
+
+    let supabaseProjectId =
+      null;
+
+
+    /*
+      Buscar cliente en Supabase
+    */
+
+    if (transaction.clientId) {
+
+      const localClient =
+        getClientById(
+          transaction.clientId
+        );
+
+      if (localClient) {
+
+        const {
+          data: remoteClients,
+          error: clientError
+        } =
+          await ovSupabase
+            .from("clients")
+            .select("id")
+            .eq(
+              "company_id",
+              companyId
+            )
+            .ilike(
+              "name",
+              localClient.name
+            )
+            .limit(1);
+
+
+        if (clientError) {
+          throw clientError;
+        }
+
+
+        if (
+          remoteClients &&
+          remoteClients.length > 0
+        ) {
+          supabaseClientId =
+            remoteClients[0].id;
+        }
+      }
+    }
+
+
+    /*
+      Buscar proyecto en Supabase
+    */
+
+    if (
+      transaction.projectId &&
+      supabaseClientId
+    ) {
+
+      const localProject =
+        getProjectById(
+          transaction.projectId
+        );
+
+      if (localProject) {
+
+        const {
+          data: remoteProjects,
+          error: projectError
+        } =
+          await ovSupabase
+            .from("projects")
+            .select("id")
+            .eq(
+              "company_id",
+              companyId
+            )
+            .eq(
+              "client_id",
+              supabaseClientId
+            )
+            .ilike(
+              "name",
+              localProject.name
+            )
+            .limit(1);
+
+
+        if (projectError) {
+          throw projectError;
+        }
+
+
+        if (
+          remoteProjects &&
+          remoteProjects.length > 0
+        ) {
+          supabaseProjectId =
+            remoteProjects[0].id;
+        }
+      }
+    }
+
+
+    const changes = {
+
+      type:
+        transaction.type,
+
+      amount:
+        transaction.amount,
+
+      currency:
+        transaction.currency ||
+        "MXN",
+
+      concept:
+        transaction.concept,
+
+      client_id:
+        supabaseClientId,
+
+      project_id:
+        supabaseProjectId,
+
+      category:
+        transaction.category ||
+        null,
+
+      transaction_date:
+        transaction.date,
+
+      notes:
+        transaction.notes ||
+        null
+    };
+
+
+    let query =
+      ovSupabase
+        .from("transactions")
+        .update(changes)
+        .eq(
+          "company_id",
+          companyId
+        );
+
+
+    if (transaction.supabaseId) {
+
+      query =
+        query.eq(
+          "id",
+          transaction.supabaseId
+        );
+
+    } else {
+
+      query =
+        query.eq(
+          "legacy_id",
+          transaction.id
+        );
+    }
+
+
+    const {
+      error
+    } =
+      await query;
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    console.info(
+      "OV Supabase: movimiento actualizado.",
+      transaction.concept
+    );
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al actualizar movimiento:",
+      error
+    );
+
+    return false;
+  }
+}
 function saveTransaction() {
 
   const amount =
