@@ -1440,7 +1440,154 @@ function createClientFromMovement() {
 /* =========================================
    ELIMINAR CLIENTE
 ========================================= */
+async function deleteClientFromSupabase(
+  client
+) {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible para eliminar cliente."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    /*
+      Obtener cliente remoto.
+    */
+
+    let remoteClientId =
+      client.supabaseId ||
+      null;
+
+
+    if (!remoteClientId) {
+
+      const {
+        data: remoteClients,
+        error: searchError
+      } =
+        await ovSupabase
+          .from("clients")
+          .select("id")
+          .eq(
+            "company_id",
+            companyId
+          )
+          .ilike(
+            "name",
+            client.name
+          )
+          .limit(1);
+
+
+      if (searchError) {
+        throw searchError;
+      }
+
+
+      if (
+        remoteClients &&
+        remoteClients.length > 0
+      ) {
+
+        remoteClientId =
+          remoteClients[0].id;
+      }
+    }
+
+
+    if (!remoteClientId) {
+
+      console.warn(
+        "OV Supabase: cliente remoto no encontrado.",
+        client.name
+      );
+
+      return false;
+    }
+
+
+    /*
+      Primero eliminar proyectos
+      pertenecientes al cliente.
+    */
+
+    const {
+      error: projectsError
+    } =
+      await ovSupabase
+        .from("projects")
+        .delete()
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "client_id",
+          remoteClientId
+        );
+
+
+    if (projectsError) {
+      throw projectsError;
+    }
+
+
+    /*
+      Después eliminar cliente.
+    */
+
+    const {
+      error: clientError
+    } =
+      await ovSupabase
+        .from("clients")
+        .delete()
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "id",
+          remoteClientId
+        );
+
+
+    if (clientError) {
+      throw clientError;
+    }
+
+
+    console.info(
+      "OV Supabase: cliente eliminado.",
+      client.name
+    );
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al eliminar cliente:",
+      error
+    );
+
+    return false;
+  }
+}
 function deleteClient(id) {
 
   const client =
