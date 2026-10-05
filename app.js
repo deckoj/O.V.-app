@@ -2553,7 +2553,11 @@ function deleteProject(id) {
     );
 
   if (!confirmed) return;
-
+   
+deleteProjectFromSupabase(
+  project
+);
+   
   companyProjects[
     activeCompanyId
   ] =
