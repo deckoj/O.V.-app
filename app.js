@@ -3688,8 +3688,8 @@ function saveTransaction() {
     const transaction =
       transactions.find(
         transaction =>
-          Number(transaction.id) ===
-          Number(
+          String(transaction.id) ===
+          String(
             editingTransactionId
           )
       );
