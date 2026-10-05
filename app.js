@@ -1631,7 +1631,10 @@ function deleteClient(id) {
     );
 
   if (!confirmed) return;
-
+   
+deleteClientFromSupabase(
+  client
+);
   companyClients[
     activeCompanyId
   ] =
