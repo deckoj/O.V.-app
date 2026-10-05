@@ -1960,7 +1960,11 @@ edit.onclick =
     actions.appendChild(
       addProject
     );
-
+     
+actions.appendChild(
+  edit
+   
+);
     actions.appendChild(
       remove
     );
