@@ -1588,6 +1588,136 @@ async function deleteClientFromSupabase(
     return false;
   }
 }
+async function editClient(id) {
+
+  const client =
+    getClientById(id);
+
+  if (!client) return;
+
+
+  const name =
+    prompt(
+      "Nuevo nombre del cliente",
+      client.name
+    );
+
+  if (!name) return;
+
+
+  const cleanName =
+    name.trim();
+
+  if (!cleanName) return;
+
+
+  if (
+    cleanName.toLowerCase() ===
+    client.name.toLowerCase()
+  ) {
+    return;
+  }
+
+
+  const duplicate =
+    getClients().find(
+      item =>
+        String(item.id) !==
+          String(client.id) &&
+        item.name.toLowerCase() ===
+          cleanName.toLowerCase()
+    );
+
+
+  if (duplicate) {
+
+    alert(
+      "Ya existe un cliente con ese nombre."
+    );
+
+    return;
+  }
+
+
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    alert(
+      "No hay una sesión activa."
+    );
+
+    return;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    let remoteClientId =
+      client.supabaseId ||
+      client.id;
+
+
+    const {
+      error
+    } =
+      await ovSupabase
+        .from("clients")
+        .update({
+          name:
+            cleanName
+        })
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "id",
+          remoteClientId
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    client.name =
+      cleanName;
+
+    saveData();
+
+    renderClientList();
+    renderClientSelector();
+    renderProjectSelector();
+
+    console.info(
+      "OV Supabase: cliente actualizado.",
+      cleanName
+    );
+
+    showToast(
+      "Cliente actualizado"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al actualizar cliente:",
+      error
+    );
+
+    alert(
+      "No se pudo actualizar el cliente."
+    );
+  }
+}
 function deleteClient(id) {
 
   const client =
