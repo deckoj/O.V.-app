@@ -3738,7 +3738,9 @@ function saveTransaction() {
     transaction.updatedAt =
       Date.now();
 
-
+updateTransactionInSupabase(
+  transaction
+);
     editingTransactionId =
       null;
 
