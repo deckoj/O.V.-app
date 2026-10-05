@@ -2330,7 +2330,195 @@ function createProjectFromMovement() {
 /* =========================================
    ELIMINAR PROYECTO
 ========================================= */
+async function deleteProjectFromSupabase(
+  project
+) {
 
+  if (
+    !window.OV_SESSION ||
+    !window.OV_SESSION.company
+  ) {
+
+    console.warn(
+      "OV Supabase: sesión no disponible para eliminar proyecto."
+    );
+
+    return false;
+  }
+
+
+  const companyId =
+    window.OV_SESSION.company.id;
+
+
+  try {
+
+    let remoteProjectId =
+      project.supabaseId ||
+      null;
+
+
+    /*
+      Si todavía no tenemos el UUID
+      de Supabase, buscar el proyecto.
+    */
+
+    if (!remoteProjectId) {
+
+      const localClient =
+        getClientById(
+          project.clientId
+        );
+
+      if (!localClient) {
+
+        console.warn(
+          "OV Supabase: cliente del proyecto no encontrado."
+        );
+
+        return false;
+      }
+
+
+      let remoteClientId =
+        localClient.supabaseId ||
+        null;
+
+
+      if (!remoteClientId) {
+
+        const {
+          data: remoteClients,
+          error: clientError
+        } =
+          await ovSupabase
+            .from("clients")
+            .select("id")
+            .eq(
+              "company_id",
+              companyId
+            )
+            .ilike(
+              "name",
+              localClient.name
+            )
+            .limit(1);
+
+
+        if (clientError) {
+          throw clientError;
+        }
+
+
+        if (
+          remoteClients &&
+          remoteClients.length > 0
+        ) {
+
+          remoteClientId =
+            remoteClients[0].id;
+        }
+      }
+
+
+      if (!remoteClientId) {
+
+        console.warn(
+          "OV Supabase: cliente remoto no encontrado."
+        );
+
+        return false;
+      }
+
+
+      const {
+        data: remoteProjects,
+        error: projectSearchError
+      } =
+        await ovSupabase
+          .from("projects")
+          .select("id")
+          .eq(
+            "company_id",
+            companyId
+          )
+          .eq(
+            "client_id",
+            remoteClientId
+          )
+          .ilike(
+            "name",
+            project.name
+          )
+          .limit(1);
+
+
+      if (projectSearchError) {
+        throw projectSearchError;
+      }
+
+
+      if (
+        remoteProjects &&
+        remoteProjects.length > 0
+      ) {
+
+        remoteProjectId =
+          remoteProjects[0].id;
+      }
+    }
+
+
+    if (!remoteProjectId) {
+
+      console.warn(
+        "OV Supabase: proyecto remoto no encontrado.",
+        project.name
+      );
+
+      return false;
+    }
+
+
+    const {
+      error
+    } =
+      await ovSupabase
+        .from("projects")
+        .delete()
+        .eq(
+          "company_id",
+          companyId
+        )
+        .eq(
+          "id",
+          remoteProjectId
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    console.info(
+      "OV Supabase: proyecto eliminado.",
+      project.name
+    );
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "OV Supabase: error al eliminar proyecto:",
+      error
+    );
+
+    return false;
+  }
+}
 function deleteProject(id) {
 
   const project =
