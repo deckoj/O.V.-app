@@ -1792,7 +1792,22 @@ function renderClientList() {
         createProject(
           client.id
         );
+const edit =
+  document.createElement(
+    "button"
+  );
 
+edit.className =
+  "smallButton";
+
+edit.textContent =
+  "Editar";
+
+edit.onclick =
+  () =>
+    editClient(
+      client.id
+    );
 
     const remove =
       document.createElement(
